@@ -379,3 +379,261 @@ class TestPrintSummary:
     def test_summary_no_quality_or_alignment(self) -> None:
         clusters = [{"prs": [{"number": 1}]}]
         _print_summary(clusters, [], [])
+
+
+# ---------------------------------------------------------------------------
+# Presets Command
+# ---------------------------------------------------------------------------
+
+
+class TestPresetsCommand:
+    """Tests for 'claw-review presets'."""
+
+    def test_presets_shows_all(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(cli, ["presets"])
+        assert result.exit_code == 0
+        assert "fast" in result.output
+        assert "balanced" in result.output
+        assert "thorough" in result.output
+
+    def test_presets_help(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(cli, ["presets", "--help"])
+        assert result.exit_code == 0
+        assert "List available model presets" in result.output
+
+
+# ---------------------------------------------------------------------------
+# Estimate Command
+# ---------------------------------------------------------------------------
+
+
+class TestEstimateCommand:
+    """Tests for 'claw-review estimate'."""
+
+    def test_estimate_basic(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(cli, ["estimate", "--repo", "owner/repo"])
+        assert result.exit_code == 0
+        assert "Cost Estimate" in result.output
+        assert "owner/repo" in result.output
+
+    def test_estimate_with_preset(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(
+            cli, ["estimate", "--repo", "owner/repo", "--preset", "fast"]
+        )
+        assert result.exit_code == 0
+        assert "fast" in result.output
+
+    def test_estimate_help(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(cli, ["estimate", "--help"])
+        assert result.exit_code == 0
+        assert "--repo" in result.output
+        assert "--preset" in result.output
+        assert "--max-prs" in result.output
+
+
+# ---------------------------------------------------------------------------
+# Analyze with Preset/Budget Flags
+# ---------------------------------------------------------------------------
+
+
+class TestAnalyzePreset:
+    """Tests for analyze command with --preset and --budget flags."""
+
+    def test_analyze_with_preset_flag(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(cli, ["analyze", "--help"])
+        assert result.exit_code == 0
+        assert "--preset" in result.output
+
+    def test_analyze_with_budget_flag(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(cli, ["analyze", "--help"])
+        assert result.exit_code == 0
+        assert "--budget" in result.output
+
+    @patch("claw_review.cli.fetch_open_prs", return_value=[])
+    @patch("claw_review.cli.ModelPool")
+    @patch("claw_review.cli.Config")
+    def test_analyze_preset_overrides_models(
+        self,
+        mock_config_cls: MagicMock,
+        mock_pool_cls: MagicMock,
+        mock_fetch: MagicMock,
+    ) -> None:
+        config = _valid_config()
+        mock_config_cls.return_value = config
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli, ["analyze", "--preset", "fast"]
+        )
+
+        assert result.exit_code == 0
+        assert "Preset: fast" in result.output
+        # The config models should have been overridden to the fast preset
+        assert config.models == [
+            "meta-llama/llama-3.1-70b-instruct",
+            "mistralai/mistral-large-latest",
+            "google/gemini-2.0-flash-001",
+        ]
+
+
+# ---------------------------------------------------------------------------
+# Merge Command
+# ---------------------------------------------------------------------------
+
+
+class TestMergeCommand:
+    """Tests for 'claw-review merge'."""
+
+    def test_merge_help(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(cli, ["merge", "--help"])
+        assert result.exit_code == 0
+        assert "Merge multiple JSON reports" in result.output
+        assert "--output" in result.output
+        assert "--json-only" in result.output
+
+    def test_merge_with_mock_reports(self, tmp_path: Path) -> None:
+        report1 = {
+            "repo": "owner/repo",
+            "timestamp": "2025-06-01T00:00:00Z",
+            "providers": ["model/a"],
+            "clusters": [
+                {"cluster_id": "c-0", "prs": [{"number": 1, "title": "PR1"}]},
+            ],
+            "quality_scores": [{"pr_number": 1, "overall_score": 7.0}],
+            "alignment_scores": [],
+        }
+        report2 = {
+            "repo": "owner/repo",
+            "timestamp": "2025-06-02T00:00:00Z",
+            "providers": ["model/b"],
+            "clusters": [
+                {"cluster_id": "c-1", "prs": [{"number": 2, "title": "PR2"}]},
+            ],
+            "quality_scores": [{"pr_number": 2, "overall_score": 8.0}],
+            "alignment_scores": [],
+        }
+
+        f1 = tmp_path / "r1.json"
+        f2 = tmp_path / "r2.json"
+        f1.write_text(json.dumps(report1))
+        f2.write_text(json.dumps(report2))
+
+        output_base = str(tmp_path / "merged")
+        runner = CliRunner()
+        result = runner.invoke(
+            cli, ["merge", str(f1), str(f2), "--output", output_base, "--json-only"]
+        )
+
+        assert result.exit_code == 0
+        assert "Merging 2 report" in result.output
+
+        # Verify the merged JSON was written
+        merged_json = Path(f"{output_base}.json")
+        assert merged_json.exists()
+        merged = json.loads(merged_json.read_text())
+        assert len(merged["clusters"]) == 2
+        assert len(merged["quality_scores"]) == 2
+
+    def test_merge_no_files_shows_error(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(cli, ["merge"])
+        # Click should show usage error since REPORT_FILES is required
+        assert result.exit_code != 0
+
+
+# ---------------------------------------------------------------------------
+# Status Command
+# ---------------------------------------------------------------------------
+
+
+class TestStatusCommand:
+    """Tests for 'claw-review status'."""
+
+    def test_status_help(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(cli, ["status", "--help"])
+        assert result.exit_code == 0
+        assert "Show analysis state" in result.output
+        assert "--repo" in result.output
+
+    @patch("claw_review.cli.Config")
+    @patch("claw_review.cli.load_state")
+    def test_status_shows_state_info(
+        self, mock_load_state: MagicMock, mock_config_cls: MagicMock
+    ) -> None:
+        config = _valid_config()
+        mock_config_cls.return_value = config
+
+        from claw_review.state import AnalysisState, AnalyzedPR
+        state = AnalysisState(
+            repo="owner/repo",
+            analyzed_prs={
+                1: AnalyzedPR(timestamp="2025-06-01T00:00:00Z"),
+                2: AnalyzedPR(timestamp="2025-06-01T00:00:00Z"),
+            },
+            last_run_timestamp="2025-06-01T00:00:00Z",
+            model_config=["model/a", "model/b"],
+        )
+        mock_load_state.return_value = state
+
+        runner = CliRunner()
+        result = runner.invoke(cli, ["status", "--repo", "owner/repo"])
+
+        assert result.exit_code == 0
+        assert "owner/repo" in result.output
+        assert "2" in result.output  # 2 analyzed PRs
+        assert "2025-06-01" in result.output
+
+    @patch("claw_review.cli.Config")
+    @patch("claw_review.cli.load_state")
+    def test_status_fresh_repo(
+        self, mock_load_state: MagicMock, mock_config_cls: MagicMock
+    ) -> None:
+        config = _valid_config()
+        mock_config_cls.return_value = config
+
+        from claw_review.state import AnalysisState
+        mock_load_state.return_value = AnalysisState(repo="owner/fresh")
+
+        runner = CliRunner()
+        result = runner.invoke(cli, ["status", "--repo", "owner/fresh"])
+
+        assert result.exit_code == 0
+        assert "0" in result.output  # 0 analyzed PRs
+        assert "Never" in result.output
+
+
+# ---------------------------------------------------------------------------
+# Analyze Batch/Force Flags
+# ---------------------------------------------------------------------------
+
+
+class TestAnalyzeBatchFlags:
+    """Tests for analyze --batch-size and --force flags."""
+
+    def test_analyze_batch_size_flag_exists(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(cli, ["analyze", "--help"])
+        assert result.exit_code == 0
+        assert "--batch-size" in result.output
+
+    def test_analyze_force_flag_exists(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(cli, ["analyze", "--help"])
+        assert result.exit_code == 0
+        assert "--force" in result.output
+
+    def test_analyze_incremental_flag_exists(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(cli, ["analyze", "--help"])
+        assert result.exit_code == 0
+        assert "--incremental" in result.output
+        assert "--no-incremental" in result.output

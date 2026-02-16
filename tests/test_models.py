@@ -1,13 +1,19 @@
-"""Tests for claw_review.models — ModelResponse and ModelPool."""
+"""Tests for claw_review.models — ModelResponse and ModelPool (async)."""
 
+import asyncio
 import json
-from unittest.mock import patch, MagicMock
+import time
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
 
 from claw_review.config import Config
-from claw_review.models import ModelResponse, ModelPool
+from claw_review.models import (
+    ModelResponse,
+    ModelPool,
+    _MAX_RETRIES,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -43,6 +49,25 @@ def _embedding_response(vectors: list[list[float]]) -> dict:
     return {
         "data": [{"embedding": v, "index": i} for i, v in enumerate(vectors)]
     }
+
+
+def _mock_httpx_response(
+    status_code: int = 200,
+    json_data: dict | None = None,
+) -> MagicMock:
+    """Build a mock httpx.Response."""
+    resp = MagicMock()
+    resp.status_code = status_code
+    resp.json.return_value = json_data or {}
+    if status_code >= 400:
+        resp.raise_for_status.side_effect = httpx.HTTPStatusError(
+            f"HTTP {status_code}",
+            request=MagicMock(),
+            response=resp,
+        )
+    else:
+        resp.raise_for_status = MagicMock()
+    return resp
 
 
 # ===================================================================
@@ -151,206 +176,365 @@ class TestModelPoolInit:
         pool = ModelPool(_make_config(openrouter_api_key="sk-abc"))
         assert pool._headers["Authorization"] == "Bearer sk-abc"
 
+    def test_default_concurrency_limit(self) -> None:
+        pool = ModelPool(_make_config())
+        assert pool.concurrency_limit == 10
+
+    def test_set_concurrency_limit(self) -> None:
+        pool = ModelPool(_make_config())
+        pool.concurrency_limit = 5
+        assert pool.concurrency_limit == 5
+
 
 class TestModelPoolQuerySingle:
-    """Tests for ModelPool.query_single()."""
+    """Tests for async ModelPool.query_single()."""
 
-    def test_success_returns_model_response(self) -> None:
+    async def test_async_query_single_success(self) -> None:
         pool = ModelPool(_make_config())
         body = _chat_response('{"intent": "test"}')
-        mock_resp = MagicMock()
-        mock_resp.json.return_value = body
-        mock_resp.raise_for_status = MagicMock()
+        mock_resp = _mock_httpx_response(200, body)
 
-        with patch("httpx.Client") as mock_client_cls:
-            client_instance = MagicMock()
-            client_instance.post.return_value = mock_resp
-            client_instance.__enter__ = MagicMock(return_value=client_instance)
-            client_instance.__exit__ = MagicMock(return_value=False)
-            mock_client_cls.return_value = client_instance
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_resp)
+        mock_client.is_closed = False
+        pool._client = mock_client
 
-            result = pool.query_single(
-                model="anthropic/claude-sonnet-4",
-                system_prompt="You are a helper.",
-                user_prompt="Analyze this.",
-            )
+        result = await pool.query_single(
+            model="anthropic/claude-sonnet-4",
+            system_prompt="You are a helper.",
+            user_prompt="Analyze this.",
+        )
 
         assert isinstance(result, ModelResponse)
         assert result.provider == "anthropic/claude-sonnet-4"
         assert result.content == '{"intent": "test"}'
         assert result.usage is not None
 
-    def test_payload_structure(self) -> None:
+    async def test_payload_structure(self) -> None:
         pool = ModelPool(_make_config())
         body = _chat_response("ok")
-        mock_resp = MagicMock()
-        mock_resp.json.return_value = body
-        mock_resp.raise_for_status = MagicMock()
+        mock_resp = _mock_httpx_response(200, body)
 
-        with patch("httpx.Client") as mock_client_cls:
-            client_instance = MagicMock()
-            client_instance.post.return_value = mock_resp
-            client_instance.__enter__ = MagicMock(return_value=client_instance)
-            client_instance.__exit__ = MagicMock(return_value=False)
-            mock_client_cls.return_value = client_instance
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_resp)
+        mock_client.is_closed = False
+        pool._client = mock_client
 
-            pool.query_single(
-                model="openai/gpt-4o",
-                system_prompt="sys",
-                user_prompt="usr",
-                temperature=0.5,
-                max_tokens=1000,
-            )
-
-            call_kwargs = client_instance.post.call_args
-            payload = call_kwargs.kwargs.get("json") or call_kwargs[1].get("json")
-            assert payload["model"] == "openai/gpt-4o"
-            assert payload["temperature"] == 0.5
-            assert payload["max_tokens"] == 1000
-            assert payload["messages"][0]["role"] == "system"
-            assert payload["messages"][1]["role"] == "user"
-
-    def test_http_error_propagates(self) -> None:
-        pool = ModelPool(_make_config())
-        mock_resp = MagicMock()
-        mock_resp.raise_for_status.side_effect = httpx.HTTPStatusError(
-            "Server Error",
-            request=MagicMock(),
-            response=MagicMock(status_code=500),
+        await pool.query_single(
+            model="openai/gpt-4o",
+            system_prompt="sys",
+            user_prompt="usr",
+            temperature=0.5,
+            max_tokens=1000,
         )
 
-        with patch("httpx.Client") as mock_client_cls:
-            client_instance = MagicMock()
-            client_instance.post.return_value = mock_resp
-            client_instance.__enter__ = MagicMock(return_value=client_instance)
-            client_instance.__exit__ = MagicMock(return_value=False)
-            mock_client_cls.return_value = client_instance
+        call_kwargs = mock_client.post.call_args
+        payload = call_kwargs.kwargs.get("json") or call_kwargs[1].get("json")
+        assert payload["model"] == "openai/gpt-4o"
+        assert payload["temperature"] == 0.5
+        assert payload["max_tokens"] == 1000
+        assert payload["messages"][0]["role"] == "system"
+        assert payload["messages"][1]["role"] == "user"
 
-            with pytest.raises(httpx.HTTPStatusError):
-                pool.query_single("m", "s", "u")
-
-    def test_timeout_propagates(self) -> None:
+    async def test_async_query_single_timeout(self) -> None:
         pool = ModelPool(_make_config())
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(side_effect=httpx.TimeoutException("timed out"))
+        mock_client.is_closed = False
+        pool._client = mock_client
 
-        with patch("httpx.Client") as mock_client_cls:
-            client_instance = MagicMock()
-            client_instance.post.side_effect = httpx.TimeoutException("timed out")
-            client_instance.__enter__ = MagicMock(return_value=client_instance)
-            client_instance.__exit__ = MagicMock(return_value=False)
-            mock_client_cls.return_value = client_instance
+        with pytest.raises(httpx.TimeoutException):
+            await pool.query_single("m", "s", "u")
 
-            with pytest.raises(httpx.TimeoutException):
-                pool.query_single("m", "s", "u")
+    async def test_async_query_single_http_error(self) -> None:
+        """Non-retryable HTTP error (e.g. 400) propagates immediately."""
+        pool = ModelPool(_make_config())
+        mock_resp = _mock_httpx_response(400)
+
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_resp)
+        mock_client.is_closed = False
+        pool._client = mock_client
+
+        with pytest.raises(httpx.HTTPStatusError):
+            await pool.query_single("m", "s", "u")
+
+        # Should NOT retry on 400
+        assert mock_client.post.call_count == 1
 
 
 class TestModelPoolQueryAll:
-    """Tests for ModelPool.query_all() consensus pattern."""
+    """Tests for async ModelPool.query_all() consensus pattern."""
 
-    def _mock_pool_query_single(
-        self, pool: ModelPool, side_effects: list
-    ) -> None:
-        """Patch query_single with a sequence of return values / exceptions."""
-        pool.query_single = MagicMock(side_effect=side_effects)
-
-    def test_all_succeed(self) -> None:
+    async def test_all_succeed(self) -> None:
         pool = ModelPool(_make_config())
         resps = [
             ModelResponse(provider=m, model=m, content=f'{{"m": "{m}"}}')
             for m in pool.models
         ]
-        pool.query_single = MagicMock(side_effect=resps)
+        pool.query_single = AsyncMock(side_effect=resps)
 
-        results = pool.query_all("sys", "usr")
+        results = await pool.query_all("sys", "usr")
         assert len(results) == 3
         assert all(r.model != "error" for r in results)
 
-    def test_one_fails_others_succeed(self) -> None:
+    async def test_async_query_all_one_fails(self) -> None:
         pool = ModelPool(_make_config())
         ok = ModelResponse(provider="ok", model="ok", content="{}")
         effects: list = [ok, Exception("boom"), ok]
-        pool.query_single = MagicMock(side_effect=effects)
+        pool.query_single = AsyncMock(side_effect=effects)
 
-        results = pool.query_all("sys", "usr")
+        results = await pool.query_all("sys", "usr")
         assert len(results) == 3
         errors = [r for r in results if r.model == "error"]
         assert len(errors) == 1
         assert "boom" in errors[0].content
 
-    def test_all_fail(self) -> None:
+    async def test_async_query_all_all_fail(self) -> None:
         pool = ModelPool(_make_config())
-        pool.query_single = MagicMock(side_effect=Exception("fail"))
+        pool.query_single = AsyncMock(side_effect=Exception("fail"))
 
-        results = pool.query_all("sys", "usr")
+        results = await pool.query_all("sys", "usr")
         assert len(results) == 3
         assert all(r.model == "error" for r in results)
 
+    async def test_async_query_all_concurrent(self) -> None:
+        """Verify that query_all uses asyncio.gather for concurrency."""
+        pool = ModelPool(_make_config())
+        call_times = []
+
+        async def slow_query(*args, **kwargs):
+            call_times.append(time.monotonic())
+            await asyncio.sleep(0.05)
+            return ModelResponse(provider="test", model="test", content="{}")
+
+        pool.query_single = AsyncMock(side_effect=slow_query)
+
+        start = time.monotonic()
+        await pool.query_all("sys", "usr")
+        elapsed = time.monotonic() - start
+
+        # 3 models at 50ms each; if sequential would take ~150ms
+        # Concurrent should take ~50ms (+overhead)
+        assert elapsed < 0.15, f"Expected concurrent execution, took {elapsed:.3f}s"
+        assert len(call_times) == 3
+
+
+class TestModelPoolRetry:
+    """Tests for retry logic with exponential backoff."""
+
+    async def test_retry_on_429(self) -> None:
+        pool = ModelPool(_make_config())
+        fail_resp = _mock_httpx_response(429)
+        ok_body = _chat_response("ok")
+        ok_resp = _mock_httpx_response(200, ok_body)
+
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(side_effect=[fail_resp, ok_resp])
+        mock_client.is_closed = False
+        pool._client = mock_client
+
+        with patch("claw_review.models.asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
+            result = await pool.query_single("m", "s", "u")
+
+        assert result.content == "ok"
+        assert mock_client.post.call_count == 2
+        mock_sleep.assert_called_once()
+
+    async def test_retry_on_500(self) -> None:
+        pool = ModelPool(_make_config())
+        fail_resp = _mock_httpx_response(500)
+        ok_body = _chat_response("recovered")
+        ok_resp = _mock_httpx_response(200, ok_body)
+
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(side_effect=[fail_resp, ok_resp])
+        mock_client.is_closed = False
+        pool._client = mock_client
+
+        with patch("claw_review.models.asyncio.sleep", new_callable=AsyncMock):
+            result = await pool.query_single("m", "s", "u")
+
+        assert result.content == "recovered"
+
+    async def test_retry_on_503(self) -> None:
+        pool = ModelPool(_make_config())
+        fail_resp = _mock_httpx_response(503)
+        ok_body = _chat_response("back up")
+        ok_resp = _mock_httpx_response(200, ok_body)
+
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(side_effect=[fail_resp, ok_resp])
+        mock_client.is_closed = False
+        pool._client = mock_client
+
+        with patch("claw_review.models.asyncio.sleep", new_callable=AsyncMock):
+            result = await pool.query_single("m", "s", "u")
+
+        assert result.content == "back up"
+
+    async def test_retry_max_retries_exceeded(self) -> None:
+        pool = ModelPool(_make_config())
+        fail_resp = _mock_httpx_response(429)
+
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=fail_resp)
+        mock_client.is_closed = False
+        pool._client = mock_client
+
+        with patch("claw_review.models.asyncio.sleep", new_callable=AsyncMock):
+            with pytest.raises(httpx.HTTPStatusError):
+                await pool.query_single("m", "s", "u")
+
+        assert mock_client.post.call_count == _MAX_RETRIES
+
+    async def test_retry_exponential_backoff(self) -> None:
+        pool = ModelPool(_make_config())
+        fail_resp = _mock_httpx_response(500)
+
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=fail_resp)
+        mock_client.is_closed = False
+        pool._client = mock_client
+
+        sleep_durations = []
+
+        async def capture_sleep(duration):
+            sleep_durations.append(duration)
+
+        with patch("claw_review.models.asyncio.sleep", side_effect=capture_sleep):
+            with patch("claw_review.models.random.uniform", return_value=0.0):
+                with pytest.raises(httpx.HTTPStatusError):
+                    await pool.query_single("m", "s", "u")
+
+        # Each of the 3 attempts fails and sleeps before the next retry
+        assert len(sleep_durations) == _MAX_RETRIES
+        assert sleep_durations[0] == 1.0  # 1.0 * 2^0
+        assert sleep_durations[1] == 2.0  # 1.0 * 2^1
+        assert sleep_durations[2] == 4.0  # 1.0 * 2^2
+
+
+class TestModelPoolSemaphore:
+    """Tests for semaphore-based concurrency control."""
+
+    async def test_semaphore_limits_concurrency(self) -> None:
+        pool = ModelPool(_make_config())
+        pool.concurrency_limit = 2
+
+        concurrent_count = 0
+        max_concurrent = 0
+
+        # Mock the HTTP client so query_single's real code path (with semaphore) runs
+        body = _chat_response("ok")
+        ok_resp = _mock_httpx_response(200, body)
+
+        async def tracked_post(*args, **kwargs):
+            nonlocal concurrent_count, max_concurrent
+            concurrent_count += 1
+            max_concurrent = max(max_concurrent, concurrent_count)
+            await asyncio.sleep(0.05)
+            concurrent_count -= 1
+            return ok_resp
+
+        mock_client = AsyncMock()
+        mock_client.post = tracked_post
+        mock_client.is_closed = False
+        pool._client = mock_client
+
+        # Override models to have more than semaphore limit
+        pool.models = ["m1", "m2", "m3", "m4", "m5"]
+        await pool.query_all("sys", "usr")
+
+        assert max_concurrent <= 2
+
+
+class TestModelPoolConnectionPool:
+    """Tests for connection pool lifecycle."""
+
+    async def test_connection_pool_reuse(self) -> None:
+        pool = ModelPool(_make_config())
+        client1 = await pool._get_client()
+        client2 = await pool._get_client()
+        assert client1 is client2
+        await pool.close()
+
+    async def test_async_context_manager_cleanup(self) -> None:
+        cfg = _make_config()
+        async with ModelPool(cfg) as pool:
+            client = await pool._get_client()
+            assert client is not None
+            assert not client.is_closed
+        # After exiting context, client should be closed
+        assert pool._client is None
+
+    async def test_close_when_no_client(self) -> None:
+        """close() should not raise if no client was created."""
+        pool = ModelPool(_make_config())
+        await pool.close()  # Should not raise
+
+    async def test_get_client_recreates_after_close(self) -> None:
+        pool = ModelPool(_make_config())
+        client1 = await pool._get_client()
+        await pool.close()
+        client2 = await pool._get_client()
+        assert client1 is not client2
+        await pool.close()
+
 
 class TestModelPoolEmbeddings:
-    """Tests for ModelPool.get_embeddings()."""
+    """Tests for async ModelPool.get_embeddings()."""
 
-    def _patch_client(self, responses: list[dict]) -> MagicMock:
-        """Build a patched httpx.Client that returns `responses` in order."""
-        client_instance = MagicMock()
-        mock_resps = []
-        for body in responses:
-            mr = MagicMock()
-            mr.json.return_value = body
-            mr.raise_for_status = MagicMock()
-            mock_resps.append(mr)
-        client_instance.post.side_effect = mock_resps
-        client_instance.__enter__ = MagicMock(return_value=client_instance)
-        client_instance.__exit__ = MagicMock(return_value=False)
-        return client_instance
-
-    def test_single_batch(self) -> None:
+    async def test_async_get_embeddings(self) -> None:
         pool = ModelPool(_make_config())
         vectors = [[0.1, 0.2], [0.3, 0.4]]
-        client_instance = self._patch_client([_embedding_response(vectors)])
+        mock_resp = _mock_httpx_response(200, _embedding_response(vectors))
 
-        with patch("httpx.Client", return_value=client_instance):
-            result = pool.get_embeddings(["hello", "world"])
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_resp)
+        mock_client.is_closed = False
+        pool._client = mock_client
+
+        result = await pool.get_embeddings(["hello", "world"])
 
         assert result == vectors
-        assert client_instance.post.call_count == 1
+        assert mock_client.post.call_count == 1
 
-    def test_multi_batch(self) -> None:
+    async def test_async_get_embeddings_multi_batch(self) -> None:
         pool = ModelPool(_make_config())
-        # 150 texts -> 2 batches (100 + 50)
         texts = [f"text-{i}" for i in range(150)]
         batch1 = [[float(i)] for i in range(100)]
         batch2 = [[float(i)] for i in range(100, 150)]
 
-        client_instance = self._patch_client([
-            _embedding_response(batch1),
-            _embedding_response(batch2),
-        ])
+        mock_resp1 = _mock_httpx_response(200, _embedding_response(batch1))
+        mock_resp2 = _mock_httpx_response(200, _embedding_response(batch2))
 
-        with patch("httpx.Client", return_value=client_instance):
-            result = pool.get_embeddings(texts)
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(side_effect=[mock_resp1, mock_resp2])
+        mock_client.is_closed = False
+        pool._client = mock_client
+
+        result = await pool.get_embeddings(texts)
 
         assert len(result) == 150
-        assert client_instance.post.call_count == 2
+        assert mock_client.post.call_count == 2
 
 
 class TestModelPoolListModels:
-    """Tests for ModelPool.list_available_models()."""
+    """Tests for async ModelPool.list_available_models()."""
 
-    def test_returns_model_list(self) -> None:
+    async def test_returns_model_list(self) -> None:
         pool = ModelPool(_make_config())
-        mock_resp = MagicMock()
-        mock_resp.json.return_value = {
+        data = {
             "data": [{"id": "anthropic/claude-sonnet-4", "name": "Claude Sonnet"}]
         }
-        mock_resp.raise_for_status = MagicMock()
+        mock_resp = _mock_httpx_response(200, data)
 
-        with patch("httpx.Client") as mock_client_cls:
-            client_instance = MagicMock()
-            client_instance.get.return_value = mock_resp
-            client_instance.__enter__ = MagicMock(return_value=client_instance)
-            client_instance.__exit__ = MagicMock(return_value=False)
-            mock_client_cls.return_value = client_instance
+        mock_client = AsyncMock()
+        mock_client.get = AsyncMock(return_value=mock_resp)
+        mock_client.is_closed = False
+        pool._client = mock_client
 
-            models = pool.list_available_models()
+        models = await pool.list_available_models()
 
         assert len(models) == 1
         assert models[0]["id"] == "anthropic/claude-sonnet-4"

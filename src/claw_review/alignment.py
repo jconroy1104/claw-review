@@ -94,7 +94,7 @@ Diff summary:
 """
 
 
-def score_alignment(
+async def score_alignment(
     prs: list[PRData],
     vision_docs: dict[str, str],
     model_pool: ModelPool,
@@ -136,7 +136,7 @@ def score_alignment(
 
         for pr in prs:
             user_prompt = _build_alignment_prompt(pr, vision_docs)
-            responses = model_pool.query_all(
+            responses = await model_pool.query_all(
                 system_prompt=ALIGNMENT_SYSTEM_PROMPT,
                 user_prompt=user_prompt,
                 temperature=0.1,

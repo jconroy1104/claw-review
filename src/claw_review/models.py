@@ -7,13 +7,20 @@ for separate SDKs per provider.
 API docs: https://openrouter.ai/docs
 """
 
+import asyncio
 import json
+import random
 from dataclasses import dataclass
 
 import httpx
 from .config import Config
 
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
+
+# Status codes that trigger a retry
+_RETRYABLE_STATUS_CODES = {429, 500, 503}
+_MAX_RETRIES = 3
+_BASE_BACKOFF = 1.0  # seconds
 
 
 @dataclass
@@ -60,6 +67,8 @@ class ModelPool:
             "HTTP-Referer": "https://github.com/vectorcertain/claw-review",
             "X-Title": "claw-review",
         }
+        self._semaphore = asyncio.Semaphore(10)
+        self._client: httpx.AsyncClient | None = None
 
     @property
     def model_count(self) -> int:
@@ -70,7 +79,35 @@ class ModelPool:
         """Return short display names for each model."""
         return [m.split("/")[-1] for m in self.models]
 
-    def query_single(
+    @property
+    def concurrency_limit(self) -> int:
+        return self._semaphore._value
+
+    @concurrency_limit.setter
+    def concurrency_limit(self, value: int) -> None:
+        self._semaphore = asyncio.Semaphore(value)
+
+    async def _get_client(self) -> httpx.AsyncClient:
+        if self._client is None or self._client.is_closed:
+            self._client = httpx.AsyncClient(
+                timeout=httpx.Timeout(60.0, connect=10.0, read=60.0, pool=5.0),
+                limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
+                headers=self._headers,
+            )
+        return self._client
+
+    async def close(self) -> None:
+        if self._client and not self._client.is_closed:
+            await self._client.aclose()
+            self._client = None
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *args):
+        await self.close()
+
+    async def query_single(
         self,
         model: str,
         system_prompt: str,
@@ -78,7 +115,10 @@ class ModelPool:
         temperature: float = 0.2,
         max_tokens: int = 2000,
     ) -> ModelResponse:
-        """Query a single model via OpenRouter.
+        """Query a single model via OpenRouter with retry logic.
+
+        Uses a semaphore to limit concurrency and retries with exponential
+        backoff on 429/500/503 status codes.
 
         Args:
             model: OpenRouter model ID (e.g., "anthropic/claude-sonnet-4")
@@ -100,60 +140,77 @@ class ModelPool:
             ],
         }
 
-        with httpx.Client(timeout=60.0) as client:
-            resp = client.post(
-                f"{OPENROUTER_BASE}/chat/completions",
-                headers=self._headers,
-                json=payload,
-            )
-            resp.raise_for_status()
-            data = resp.json()
+        client = await self._get_client()
 
-        # Extract content from OpenAI-compatible response
-        content = data["choices"][0]["message"]["content"]
-        usage = data.get("usage")
+        async with self._semaphore:
+            last_exc: Exception | None = None
+            for attempt in range(_MAX_RETRIES):
+                try:
+                    resp = await client.post(
+                        f"{OPENROUTER_BASE}/chat/completions",
+                        json=payload,
+                    )
+                    resp.raise_for_status()
+                    data = resp.json()
 
-        return ModelResponse(
-            provider=model,
-            model=model,
-            content=content,
-            usage=usage,
-        )
+                    content = data["choices"][0]["message"]["content"]
+                    usage = data.get("usage")
 
-    def query_all(
+                    return ModelResponse(
+                        provider=model,
+                        model=model,
+                        content=content,
+                        usage=usage,
+                    )
+                except httpx.HTTPStatusError as e:
+                    if e.response.status_code in _RETRYABLE_STATUS_CODES:
+                        last_exc = e
+                        backoff = _BASE_BACKOFF * (2 ** attempt) + random.uniform(0, 0.5)
+                        await asyncio.sleep(backoff)
+                        continue
+                    raise
+                except httpx.TimeoutException:
+                    raise
+            # All retries exhausted
+            raise last_exc  # type: ignore[misc]
+
+    async def query_all(
         self,
         system_prompt: str,
         user_prompt: str,
         temperature: float = 0.2,
         max_tokens: int = 2000,
     ) -> list[ModelResponse]:
-        """Query ALL configured models and collect responses.
+        """Query ALL configured models concurrently and collect responses.
 
-        Each model is queried independently. If one fails, others continue.
-        This is the core consensus pattern — independent evaluations
-        that are later fused.
+        Each model is queried independently via asyncio.gather(). If one fails,
+        others continue. This is the core consensus pattern -- independent
+        evaluations that are later fused.
 
         Returns:
             List of ModelResponse objects (may include error responses)
         """
+        tasks = [
+            self.query_single(model, system_prompt, user_prompt, temperature, max_tokens)
+            for model in self.models
+        ]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
         responses = []
-        for model in self.models:
-            try:
-                resp = self.query_single(
-                    model, system_prompt, user_prompt, temperature, max_tokens
-                )
-                responses.append(resp)
-            except Exception as e:
+        for model, result in zip(self.models, results):
+            if isinstance(result, Exception):
                 responses.append(
                     ModelResponse(
                         provider=model,
                         model="error",
-                        content=f"ERROR: {e}",
+                        content=f"ERROR: {result}",
                     )
                 )
+            else:
+                responses.append(result)
         return responses
 
-    def get_embeddings(self, texts: list[str]) -> list[list[float]]:
+    async def get_embeddings(self, texts: list[str]) -> list[list[float]]:
         """Generate embeddings via OpenRouter.
 
         Uses the configured embedding model (default: OpenAI text-embedding-3-small).
@@ -165,35 +222,31 @@ class ModelPool:
         Returns:
             List of embedding vectors
         """
-        all_embeddings = []
+        all_embeddings: list[list[float]] = []
         batch_size = 100
+        client = await self._get_client()
 
-        with httpx.Client(timeout=30.0) as client:
-            for i in range(0, len(texts), batch_size):
-                batch = texts[i : i + batch_size]
-                payload = {
-                    "model": self.config.embedding_model,
-                    "input": batch,
-                }
-                resp = client.post(
-                    f"{OPENROUTER_BASE}/embeddings",
-                    headers=self._headers,
-                    json=payload,
-                )
-                resp.raise_for_status()
-                data = resp.json()
-                all_embeddings.extend(
-                    [item["embedding"] for item in data["data"]]
-                )
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i : i + batch_size]
+            payload = {
+                "model": self.config.embedding_model,
+                "input": batch,
+            }
+            resp = await client.post(
+                f"{OPENROUTER_BASE}/embeddings",
+                json=payload,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            all_embeddings.extend(
+                [item["embedding"] for item in data["data"]]
+            )
 
         return all_embeddings
 
-    def list_available_models(self) -> list[dict]:
+    async def list_available_models(self) -> list[dict]:
         """List all models available on OpenRouter (for discovery)."""
-        with httpx.Client(timeout=15.0) as client:
-            resp = client.get(
-                f"{OPENROUTER_BASE}/models",
-                headers=self._headers,
-            )
-            resp.raise_for_status()
-            return resp.json().get("data", [])
+        client = await self._get_client()
+        resp = await client.get(f"{OPENROUTER_BASE}/models")
+        resp.raise_for_status()
+        return resp.json().get("data", [])

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from claw_review.config import Config, DEFAULT_MODELS, _parse_models
+from claw_review.config import Config, DEFAULT_MODELS, PRESETS, _parse_models, get_preset, list_presets
 
 
 class TestParseModels:
@@ -210,3 +210,48 @@ class TestConfigValidation:
         config = Config()
         issues = config.validate()
         assert any("OPENROUTER_API_KEY" in issue for issue in issues)
+
+
+class TestPresets:
+    """Tests for model preset configuration."""
+
+    def test_get_preset_fast(self) -> None:
+        preset = get_preset("fast")
+        assert "models" in preset
+        assert "description" in preset
+        assert "est_cost_per_100_prs" in preset
+        assert preset["models"] == PRESETS["fast"]["models"]
+
+    def test_get_preset_balanced(self) -> None:
+        preset = get_preset("balanced")
+        assert preset["models"] == PRESETS["balanced"]["models"]
+        assert "quality/cost" in preset["description"].lower() or "recommended" in preset["description"].lower()
+
+    def test_get_preset_thorough(self) -> None:
+        preset = get_preset("thorough")
+        assert preset["models"] == PRESETS["thorough"]["models"]
+        assert "highest" in preset["description"].lower() or "quality" in preset["description"].lower()
+
+    def test_get_preset_unknown_raises(self) -> None:
+        with pytest.raises(ValueError, match="Unknown preset 'nonexistent'"):
+            get_preset("nonexistent")
+
+    def test_list_presets_returns_all(self) -> None:
+        result = list_presets()
+        assert set(result.keys()) == {"fast", "balanced", "thorough"}
+        # Ensure it returns a copy
+        assert result is not PRESETS
+
+    def test_preset_models_are_valid_format(self) -> None:
+        for name, preset in PRESETS.items():
+            for model in preset["models"]:
+                assert "/" in model, f"Model '{model}' in preset '{name}' missing provider prefix"
+
+    def test_fast_preset_has_three_models(self) -> None:
+        assert len(PRESETS["fast"]["models"]) == 3
+
+    def test_balanced_preset_has_three_models(self) -> None:
+        assert len(PRESETS["balanced"]["models"]) == 3
+
+    def test_thorough_preset_has_three_models(self) -> None:
+        assert len(PRESETS["thorough"]["models"]) == 3

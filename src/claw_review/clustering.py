@@ -91,7 +91,7 @@ Diff summary (truncated):
 """
 
 
-def extract_intents(
+async def extract_intents(
     prs: list[PRData],
     model_pool: ModelPool,
 ) -> list[IntentResult]:
@@ -117,7 +117,7 @@ def extract_intents(
 
         for pr in prs:
             user_prompt = _build_intent_prompt(pr)
-            responses = model_pool.query_all(
+            responses = await model_pool.query_all(
                 system_prompt=INTENT_SYSTEM_PROMPT,
                 user_prompt=user_prompt,
                 temperature=0.1,
@@ -189,7 +189,7 @@ def _majority_vote(items: list[str]) -> str:
     return counts.most_common(1)[0][0]
 
 
-def generate_embeddings(
+async def generate_embeddings(
     intents: list[IntentResult],
     model_pool: ModelPool,
 ) -> list[IntentResult]:
@@ -205,7 +205,7 @@ def generate_embeddings(
         for r in intents
     ]
 
-    embeddings = model_pool.get_embeddings(texts)
+    embeddings = await model_pool.get_embeddings(texts)
 
     for intent_result, embedding in zip(intents, embeddings):
         intent_result.embedding = embedding

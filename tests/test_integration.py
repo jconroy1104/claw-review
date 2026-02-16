@@ -2,8 +2,9 @@
 
 import json
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from click.testing import CliRunner
 
 from claw_review.cli import cli
@@ -68,7 +69,7 @@ def _mock_model_pool(
     score_json: dict | None = None,
     alignment_json: dict | None = None,
 ) -> MagicMock:
-    """Build a mock ModelPool with configurable JSON responses."""
+    """Build a mock ModelPool with configurable async JSON responses."""
     pool = MagicMock(spec=ModelPool)
     pool.models = ["model/a", "model/b"]
     pool.model_count = 2
@@ -107,27 +108,21 @@ def _mock_model_pool(
             "rationale": "Well-aligned with project goals",
         }
 
-    pool.query_all.side_effect = lambda **kwargs: [
-        _make_response(
-            # Choose response based on the system prompt content
-            intent_json
-            if "intent" in kwargs.get("system_prompt", "").lower()
-            else score_json
-            if "score" in kwargs.get("system_prompt", "").lower()
-            else alignment_json,
-            provider="model/a",
-        ),
-        _make_response(
-            intent_json
-            if "intent" in kwargs.get("system_prompt", "").lower()
-            else score_json
-            if "score" in kwargs.get("system_prompt", "").lower()
-            else alignment_json,
-            provider="model/b",
-        ),
-    ]
+    async def _query_all_side_effect(**kwargs):
+        system_prompt = kwargs.get("system_prompt", "")
+        if "intent" in system_prompt.lower():
+            data = intent_json
+        elif "score" in system_prompt.lower():
+            data = score_json
+        else:
+            data = alignment_json
+        return [
+            _make_response(data, provider="model/a"),
+            _make_response(data, provider="model/b"),
+        ]
 
-    pool.get_embeddings.return_value = [[0.1] * 10, [0.9] * 10]
+    pool.query_all = AsyncMock(side_effect=_query_all_side_effect)
+    pool.get_embeddings = AsyncMock(return_value=[[0.1] * 10, [0.9] * 10])
 
     return pool
 
@@ -140,7 +135,8 @@ def _mock_model_pool(
 class TestIntentExtractionPipeline:
     """Test intent extraction → embedding → clustering pipeline."""
 
-    def test_extract_and_cluster_two_unique_prs(self) -> None:
+    @pytest.mark.asyncio
+    async def test_extract_and_cluster_two_unique_prs(self) -> None:
         prs = [_make_pr(1, "Fix parser"), _make_pr(2, "Add dark mode")]
         pool = _mock_model_pool()
 
@@ -151,7 +147,7 @@ class TestIntentExtractionPipeline:
             {"intent": "Add dark mode UI", "category": "feature", "affected_area": "UI"},
         ]
 
-        def _side_effect(**kwargs):
+        async def _side_effect(**kwargs):
             idx = min(call_count["n"], len(intents_data) - 1)
             call_count["n"] += 1
             data = intents_data[idx]
@@ -160,34 +156,35 @@ class TestIntentExtractionPipeline:
                 ModelResponse("model/b", "model/b", json.dumps(data)),
             ]
 
-        pool.query_all.side_effect = _side_effect
+        pool.query_all = AsyncMock(side_effect=_side_effect)
         # Dissimilar embeddings → should be singletons
-        pool.get_embeddings.return_value = [[1.0] + [0.0] * 9, [0.0] * 9 + [1.0]]
+        pool.get_embeddings = AsyncMock(return_value=[[1.0] + [0.0] * 9, [0.0] * 9 + [1.0]])
 
-        intents = extract_intents(prs, pool)
+        intents = await extract_intents(prs, pool)
         assert len(intents) == 2
 
-        intents = generate_embeddings(intents, pool)
+        intents = await generate_embeddings(intents, pool)
         assert all(i.embedding is not None for i in intents)
 
         clusters = cluster_intents(intents, similarity_threshold=0.82)
         # Dissimilar → all singletons
         assert all(len(c.prs) == 1 for c in clusters)
 
-    def test_extract_and_cluster_duplicate_prs(self) -> None:
+    @pytest.mark.asyncio
+    async def test_extract_and_cluster_duplicate_prs(self) -> None:
         prs = [_make_pr(1, "Fix parser v1"), _make_pr(2, "Fix parser v2")]
         pool = _mock_model_pool()
 
         same_intent = {"intent": "Fix parser bug", "category": "bugfix", "affected_area": "parser"}
-        pool.query_all.return_value = [
+        pool.query_all = AsyncMock(return_value=[
             ModelResponse("model/a", "model/a", json.dumps(same_intent)),
             ModelResponse("model/b", "model/b", json.dumps(same_intent)),
-        ]
+        ])
         # Nearly identical embeddings → should cluster
-        pool.get_embeddings.return_value = [[1.0] * 10, [1.0] * 10]
+        pool.get_embeddings = AsyncMock(return_value=[[1.0] * 10, [1.0] * 10])
 
-        intents = extract_intents(prs, pool)
-        intents = generate_embeddings(intents, pool)
+        intents = await extract_intents(prs, pool)
+        intents = await generate_embeddings(intents, pool)
         clusters = cluster_intents(intents, similarity_threshold=0.82)
 
         dup_clusters = [c for c in clusters if len(c.prs) > 1]
@@ -198,7 +195,8 @@ class TestIntentExtractionPipeline:
 class TestScoringPipeline:
     """Test quality scoring → ranking pipeline."""
 
-    def test_score_and_rank(self) -> None:
+    @pytest.mark.asyncio
+    async def test_score_and_rank(self) -> None:
         prs = [_make_pr(1, "Fix A"), _make_pr(2, "Fix B")]
         pool = MagicMock(spec=ModelPool)
 
@@ -210,7 +208,7 @@ class TestScoringPipeline:
              "breaking_risk": 5, "style_consistency": 5, "summary": "Mediocre"},
         ]
 
-        def _side_effect(**kwargs):
+        async def _side_effect(**kwargs):
             idx = min(call_count["n"], len(scores_data) - 1)
             call_count["n"] += 1
             data = scores_data[idx]
@@ -219,9 +217,9 @@ class TestScoringPipeline:
                 ModelResponse("model/b", "model/b", json.dumps(data)),
             ]
 
-        pool.query_all.side_effect = _side_effect
+        pool.query_all = AsyncMock(side_effect=_side_effect)
 
-        quality_scores = score_prs(prs, pool, disagreement_threshold=3.0)
+        quality_scores = await score_prs(prs, pool, disagreement_threshold=3.0)
         assert len(quality_scores) == 2
         # First should be higher score (sorted descending)
         assert quality_scores[0].overall_score >= quality_scores[1].overall_score
@@ -244,7 +242,8 @@ class TestScoringPipeline:
 class TestAlignmentPipeline:
     """Test vision alignment scoring."""
 
-    def test_score_alignment_with_docs(self) -> None:
+    @pytest.mark.asyncio
+    async def test_score_alignment_with_docs(self) -> None:
         prs = [_make_pr(1)]
         pool = MagicMock(spec=ModelPool)
 
@@ -255,13 +254,13 @@ class TestAlignmentPipeline:
             "recommendation": "MERGE",
             "rationale": "Aligns with project goals",
         }
-        pool.query_all.return_value = [
+        pool.query_all = AsyncMock(return_value=[
             ModelResponse("model/a", "model/a", json.dumps(alignment_data)),
             ModelResponse("model/b", "model/b", json.dumps(alignment_data)),
-        ]
+        ])
 
         vision_docs = {"README.md": "# MyProject\nFix bugs and ship."}
-        results = score_alignment(prs, vision_docs, pool, reject_threshold=4.0)
+        results = await score_alignment(prs, vision_docs, pool, reject_threshold=4.0)
 
         assert len(results) == 1
         assert results[0].alignment_score == 7.5

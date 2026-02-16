@@ -118,7 +118,7 @@ Diff:
 """
 
 
-def score_prs(
+async def score_prs(
     prs: list[PRData],
     model_pool: ModelPool,
     disagreement_threshold: float = 3.0,
@@ -147,7 +147,7 @@ def score_prs(
 
         for pr in prs:
             user_prompt = _build_scoring_prompt(pr)
-            responses = model_pool.query_all(
+            responses = await model_pool.query_all(
                 system_prompt=SCORING_SYSTEM_PROMPT,
                 user_prompt=user_prompt,
                 temperature=0.1,

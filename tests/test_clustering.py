@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 from claw_review.clustering import (
     IntentResult,
@@ -169,10 +169,10 @@ class TestExtractIntents:
 
     def _make_pool(self, responses: list[ModelResponse]) -> MagicMock:
         pool = MagicMock()
-        pool.query_all.return_value = responses
+        pool.query_all = AsyncMock(return_value=responses)
         return pool
 
-    def test_single_pr_success(self) -> None:
+    async def test_single_pr_success(self) -> None:
         pr = _make_pr(number=10, title="Fix bug")
         responses = [
             _model_resp("a", {"intent": "Fix the login bug", "category": "bugfix", "affected_area": "auth"}),
@@ -180,7 +180,7 @@ class TestExtractIntents:
         ]
         pool = self._make_pool(responses)
 
-        results = extract_intents([pr], pool)
+        results = await extract_intents([pr], pool)
 
         assert len(results) == 1
         r = results[0]
@@ -189,15 +189,15 @@ class TestExtractIntents:
         assert r.affected_area == "auth"
         assert len(r.intent_descriptions) == 2
 
-    def test_multiple_prs(self) -> None:
+    async def test_multiple_prs(self) -> None:
         prs = [_make_pr(number=i) for i in range(3)]
         resp = [_model_resp("a", {"intent": "x", "category": "bugfix", "affected_area": "core"})]
         pool = self._make_pool(resp)
 
-        results = extract_intents(prs, pool)
+        results = await extract_intents(prs, pool)
         assert len(results) == 3
 
-    def test_handles_model_failures(self) -> None:
+    async def test_handles_model_failures(self) -> None:
         pr = _make_pr()
         responses = [
             _error_resp("a"),
@@ -205,18 +205,18 @@ class TestExtractIntents:
         ]
         pool = self._make_pool(responses)
 
-        results = extract_intents([pr], pool)
+        results = await extract_intents([pr], pool)
         assert len(results) == 1
         # Only one successful response should be in descriptions
         assert len(results[0].intent_descriptions) == 1
 
-    def test_handles_malformed_json(self) -> None:
+    async def test_handles_malformed_json(self) -> None:
         pr = _make_pr()
         bad_resp = ModelResponse(provider="bad", model="bad", content="not json at all")
         good_resp = _model_resp("ok", {"intent": "valid", "category": "docs", "affected_area": "docs"})
         pool = self._make_pool([bad_resp, good_resp])
 
-        results = extract_intents([pr], pool)
+        results = await extract_intents([pr], pool)
         assert len(results) == 1
         # The malformed response should still put the raw text (truncated) in descriptions
         assert "bad" in results[0].intent_descriptions
@@ -229,23 +229,23 @@ class TestExtractIntents:
 
 
 class TestGenerateEmbeddings:
-    def test_attaches_embeddings(self) -> None:
+    async def test_attaches_embeddings(self) -> None:
         intents = [_make_intent(pr_number=i) for i in range(3)]
         vectors = [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
         pool = MagicMock()
-        pool.get_embeddings.return_value = vectors
+        pool.get_embeddings = AsyncMock(return_value=vectors)
 
-        result = generate_embeddings(intents, pool)
+        result = await generate_embeddings(intents, pool)
 
         assert len(result) == 3
         for intent_r, vec in zip(result, vectors):
             assert intent_r.embedding == vec
 
-    def test_empty_input(self) -> None:
+    async def test_empty_input(self) -> None:
         pool = MagicMock()
-        pool.get_embeddings.return_value = []
+        pool.get_embeddings = AsyncMock(return_value=[])
 
-        result = generate_embeddings([], pool)
+        result = await generate_embeddings([], pool)
         assert result == []
 
 

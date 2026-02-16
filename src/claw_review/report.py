@@ -1,5 +1,7 @@
 """HTML report generator for claw-review output."""
 
+from __future__ import annotations
+
 import json
 from pathlib import Path
 from datetime import datetime, timezone
@@ -377,3 +379,105 @@ def generate_json_report(
     output.write_text(json.dumps(report, indent=2))
     console.print(f"[bold green]✓ JSON report written to {output}")
     return str(output)
+
+
+def merge_reports(report_files: list[str]) -> dict:
+    """Merge multiple JSON reports into a combined report.
+
+    Combines clusters, quality scores, and alignment scores from
+    multiple report files. Deduplicates PRs that appear in multiple
+    reports (keeps the latest entry based on report file order — later
+    files are considered more recent).
+
+    Args:
+        report_files: List of paths to JSON report files
+
+    Returns:
+        Combined report dict with keys: repo, timestamp, providers,
+        clusters, quality_scores, alignment_scores, summary.
+    """
+    all_clusters: list[dict] = []
+    all_quality: list[dict] = []
+    all_alignment: list[dict] = []
+    all_providers: set[str] = set()
+    repo = ""
+    latest_timestamp = ""
+
+    # Track seen PR numbers for deduplication
+    seen_quality_prs: dict[int, int] = {}  # pr_number -> index in all_quality
+    seen_alignment_prs: dict[int, int] = {}  # pr_number -> index in all_alignment
+    seen_cluster_prs: set[int] = set()  # pr_numbers already in clusters
+
+    for report_path in report_files:
+        data = json.loads(Path(report_path).read_text())
+
+        # Use the repo from the first report, or update if later ones differ
+        if data.get("repo"):
+            repo = data["repo"]
+
+        timestamp = data.get("timestamp", "")
+        if timestamp > latest_timestamp:
+            latest_timestamp = timestamp
+
+        # Merge providers (union)
+        for provider in data.get("providers", []):
+            all_providers.add(provider)
+
+        # Merge quality scores (deduplicate by PR number, keep latest)
+        for qs in data.get("quality_scores", []):
+            pr_num = qs.get("pr_number")
+            if pr_num is not None and pr_num in seen_quality_prs:
+                # Replace with the latest entry
+                all_quality[seen_quality_prs[pr_num]] = qs
+            else:
+                if pr_num is not None:
+                    seen_quality_prs[pr_num] = len(all_quality)
+                all_quality.append(qs)
+
+        # Merge alignment scores (deduplicate by PR number, keep latest)
+        for als in data.get("alignment_scores", []):
+            pr_num = als.get("pr_number")
+            if pr_num is not None and pr_num in seen_alignment_prs:
+                all_alignment[seen_alignment_prs[pr_num]] = als
+            else:
+                if pr_num is not None:
+                    seen_alignment_prs[pr_num] = len(all_alignment)
+                all_alignment.append(als)
+
+        # Merge clusters — deduplicate PRs within clusters
+        for cluster in data.get("clusters", []):
+            # Filter out PRs we've already seen in previous clusters
+            new_prs = [
+                pr for pr in cluster.get("prs", [])
+                if pr.get("number") not in seen_cluster_prs
+            ]
+            if new_prs:
+                merged_cluster = dict(cluster)
+                merged_cluster["prs"] = new_prs
+                all_clusters.append(merged_cluster)
+                for pr in new_prs:
+                    pr_num = pr.get("number")
+                    if pr_num is not None:
+                        seen_cluster_prs.add(pr_num)
+
+    # Compute summary
+    total_prs = sum(len(c.get("prs", [])) for c in all_clusters)
+    dup_clusters = [c for c in all_clusters if len(c.get("prs", [])) > 1]
+
+    return {
+        "repo": repo,
+        "timestamp": latest_timestamp,
+        "providers": sorted(all_providers),
+        "summary": {
+            "total_prs": total_prs,
+            "duplicate_clusters": len(dup_clusters),
+            "duplicate_prs": sum(len(c["prs"]) for c in dup_clusters),
+            "flagged_for_drift": sum(
+                1 for a in all_alignment
+                if a.get("alignment_score", 10) < 5
+            ),
+        },
+        "clusters": all_clusters,
+        "quality_scores": all_quality,
+        "alignment_scores": all_alignment,
+    }

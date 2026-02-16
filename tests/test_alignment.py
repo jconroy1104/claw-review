@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 from claw_review.github_client import PRData
 from claw_review.models import ModelResponse
@@ -71,7 +71,7 @@ def _error_response(provider: str) -> ModelResponse:
 
 def _mock_pool(responses: list[ModelResponse]) -> MagicMock:
     pool = MagicMock()
-    pool.query_all.return_value = responses
+    pool.query_all = AsyncMock(return_value=responses)
     return pool
 
 
@@ -135,7 +135,7 @@ class TestBuildAlignmentPrompt:
 
 
 class TestScoreAlignment:
-    def test_valid_responses(self) -> None:
+    async def test_valid_responses(self) -> None:
         pr = _make_pr(number=10)
         vision_docs = _load_vision_docs()
         responses = [
@@ -148,7 +148,7 @@ class TestScoreAlignment:
         ]
         pool = _mock_pool(responses)
 
-        results = score_alignment([pr], vision_docs, pool)
+        results = await score_alignment([pr], vision_docs, pool)
 
         assert len(results) == 1
         a = results[0]
@@ -157,16 +157,16 @@ class TestScoreAlignment:
         assert "MERGE" in a.recommendation
         assert len(a.aligned_aspects) > 0
 
-    def test_empty_vision_docs_returns_empty(self) -> None:
+    async def test_empty_vision_docs_returns_empty(self) -> None:
         pr = _make_pr()
         pool = _mock_pool([])
 
-        results = score_alignment([pr], {}, pool)
+        results = await score_alignment([pr], {}, pool)
         assert results == []
         # pool.query_all should not have been called
         pool.query_all.assert_not_called()
 
-    def test_score_below_reject_threshold_becomes_close(self) -> None:
+    async def test_score_below_reject_threshold_becomes_close(self) -> None:
         pr = _make_pr()
         vision_docs = _load_vision_docs()
         responses = [
@@ -177,12 +177,12 @@ class TestScoreAlignment:
         ]
         pool = _mock_pool(responses)
 
-        results = score_alignment([pr], vision_docs, pool,
+        results = await score_alignment([pr], vision_docs, pool,
                                   reject_threshold=4.0)
         assert len(results) == 1
         assert results[0].recommendation == "CLOSE"
 
-    def test_score_above_threshold_keeps_model_recommendation(self) -> None:
+    async def test_score_above_threshold_keeps_model_recommendation(self) -> None:
         pr = _make_pr()
         vision_docs = _load_vision_docs()
         responses = [
@@ -193,11 +193,11 @@ class TestScoreAlignment:
         ]
         pool = _mock_pool(responses)
 
-        results = score_alignment([pr], vision_docs, pool,
+        results = await score_alignment([pr], vision_docs, pool,
                                   reject_threshold=4.0)
         assert results[0].recommendation == "MERGE"
 
-    def test_handles_model_errors(self) -> None:
+    async def test_handles_model_errors(self) -> None:
         pr = _make_pr()
         vision_docs = _load_vision_docs()
         responses = [
@@ -208,22 +208,22 @@ class TestScoreAlignment:
         ]
         pool = _mock_pool(responses)
 
-        results = score_alignment([pr], vision_docs, pool)
+        results = await score_alignment([pr], vision_docs, pool)
         assert len(results) == 1
         # Only model-b contributes
         assert results[0].scores_by_provider == {"model-b": 6.0}
 
-    def test_all_models_invalid_json_skips_pr(self) -> None:
+    async def test_all_models_invalid_json_skips_pr(self) -> None:
         pr = _make_pr()
         vision_docs = _load_vision_docs()
         bad1 = ModelResponse(provider="m1", model="m1", content="not json")
         bad2 = ModelResponse(provider="m2", model="m2", content="also bad {{{")
         pool = _mock_pool([bad1, bad2])
 
-        results = score_alignment([pr], vision_docs, pool)
+        results = await score_alignment([pr], vision_docs, pool)
         assert len(results) == 0
 
-    def test_deduplicates_aligned_aspects(self) -> None:
+    async def test_deduplicates_aligned_aspects(self) -> None:
         pr = _make_pr()
         vision_docs = _load_vision_docs()
         responses = [
@@ -232,13 +232,13 @@ class TestScoreAlignment:
         ]
         pool = _mock_pool(responses)
 
-        results = score_alignment([pr], vision_docs, pool)
+        results = await score_alignment([pr], vision_docs, pool)
         # "Bug fix" should appear only once
         assert results[0].aligned_aspects.count("Bug fix") == 1
         assert "Performance" in results[0].aligned_aspects
         assert "Testing" in results[0].aligned_aspects
 
-    def test_deduplicates_drift_concerns(self) -> None:
+    async def test_deduplicates_drift_concerns(self) -> None:
         pr = _make_pr()
         vision_docs = _load_vision_docs()
         responses = [
@@ -247,10 +247,10 @@ class TestScoreAlignment:
         ]
         pool = _mock_pool(responses)
 
-        results = score_alignment([pr], vision_docs, pool)
+        results = await score_alignment([pr], vision_docs, pool)
         assert results[0].drift_concerns.count("Scope creep") == 1
 
-    def test_confidence_high_when_models_agree(self) -> None:
+    async def test_confidence_high_when_models_agree(self) -> None:
         pr = _make_pr()
         vision_docs = _load_vision_docs()
         responses = [
@@ -259,11 +259,11 @@ class TestScoreAlignment:
         ]
         pool = _mock_pool(responses)
 
-        results = score_alignment([pr], vision_docs, pool)
+        results = await score_alignment([pr], vision_docs, pool)
         # spread=0, confidence = max(0, 1 - 0/10) = 1.0
         assert results[0].confidence == 1.0
 
-    def test_confidence_lower_when_models_disagree(self) -> None:
+    async def test_confidence_lower_when_models_disagree(self) -> None:
         pr = _make_pr()
         vision_docs = _load_vision_docs()
         responses = [
@@ -272,11 +272,11 @@ class TestScoreAlignment:
         ]
         pool = _mock_pool(responses)
 
-        results = score_alignment([pr], vision_docs, pool)
+        results = await score_alignment([pr], vision_docs, pool)
         # spread=6, confidence = max(0, 1 - 6/10) = 0.4
         assert results[0].confidence == 0.4
 
-    def test_results_sorted_by_alignment_score_ascending(self) -> None:
+    async def test_results_sorted_by_alignment_score_ascending(self) -> None:
         """Lowest alignment scores (problematic PRs) should be first."""
         prs = [_make_pr(number=i) for i in range(3)]
         vision_docs = _load_vision_docs()
@@ -286,13 +286,13 @@ class TestScoreAlignment:
             [_alignment_response("m", alignment_score=5.0)],
         ]
         pool = MagicMock()
-        pool.query_all.side_effect = responses_list
+        pool.query_all = AsyncMock(side_effect=responses_list)
 
-        results = score_alignment(prs, vision_docs, pool)
+        results = await score_alignment(prs, vision_docs, pool)
         scores = [r.alignment_score for r in results]
         assert scores == sorted(scores)
 
-    def test_single_model_confidence_is_one(self) -> None:
+    async def test_single_model_confidence_is_one(self) -> None:
         """Single model response should have confidence=1.0 (spread=0)."""
         pr = _make_pr()
         vision_docs = _load_vision_docs()
@@ -301,7 +301,7 @@ class TestScoreAlignment:
         ]
         pool = _mock_pool(responses)
 
-        results = score_alignment([pr], vision_docs, pool)
+        results = await score_alignment([pr], vision_docs, pool)
         assert results[0].confidence == 1.0
 
 

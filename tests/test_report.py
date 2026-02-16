@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from claw_review.report import generate_report, generate_json_report
+from claw_review.report import generate_report, generate_json_report, merge_reports
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -334,3 +334,152 @@ class TestGenerateJsonReport:
         )
         data = json.loads(output.read_text())
         assert data["providers"] == providers
+
+
+# ===================================================================
+# merge_reports
+# ===================================================================
+
+
+def _write_report(path: Path, report: dict) -> str:
+    """Helper to write a report dict to a JSON file."""
+    path.write_text(json.dumps(report, indent=2))
+    return str(path)
+
+
+class TestMergeReports:
+    """Tests for merge_reports."""
+
+    def test_merge_two_reports(self, tmp_path: Path) -> None:
+        report1 = {
+            "repo": "owner/repo",
+            "timestamp": "2025-06-01T00:00:00Z",
+            "providers": ["model/a", "model/b"],
+            "clusters": [
+                {
+                    "cluster_id": "c-0",
+                    "prs": [{"number": 1, "title": "PR1"}, {"number": 2, "title": "PR2"}],
+                }
+            ],
+            "quality_scores": [{"pr_number": 1, "overall_score": 7.0}],
+            "alignment_scores": [{"pr_number": 1, "alignment_score": 8.0}],
+        }
+        report2 = {
+            "repo": "owner/repo",
+            "timestamp": "2025-06-02T00:00:00Z",
+            "providers": ["model/b", "model/c"],
+            "clusters": [
+                {
+                    "cluster_id": "c-1",
+                    "prs": [{"number": 3, "title": "PR3"}],
+                }
+            ],
+            "quality_scores": [{"pr_number": 3, "overall_score": 9.0}],
+            "alignment_scores": [{"pr_number": 3, "alignment_score": 6.0}],
+        }
+
+        f1 = _write_report(tmp_path / "r1.json", report1)
+        f2 = _write_report(tmp_path / "r2.json", report2)
+
+        merged = merge_reports([f1, f2])
+
+        assert merged["repo"] == "owner/repo"
+        assert merged["timestamp"] == "2025-06-02T00:00:00Z"
+        assert set(merged["providers"]) == {"model/a", "model/b", "model/c"}
+        assert len(merged["clusters"]) == 2
+        assert len(merged["quality_scores"]) == 2
+        assert len(merged["alignment_scores"]) == 2
+        # Summary computed correctly
+        total_prs = sum(len(c["prs"]) for c in merged["clusters"])
+        assert total_prs == 3
+        assert merged["summary"]["total_prs"] == 3
+
+    def test_merge_deduplicates_prs(self, tmp_path: Path) -> None:
+        report1 = {
+            "repo": "owner/repo",
+            "timestamp": "2025-06-01T00:00:00Z",
+            "providers": ["model/a"],
+            "clusters": [
+                {"cluster_id": "c-0", "prs": [{"number": 1, "title": "PR1"}]},
+            ],
+            "quality_scores": [{"pr_number": 1, "overall_score": 5.0}],
+            "alignment_scores": [{"pr_number": 1, "alignment_score": 4.0}],
+        }
+        report2 = {
+            "repo": "owner/repo",
+            "timestamp": "2025-06-02T00:00:00Z",
+            "providers": ["model/a"],
+            "clusters": [
+                {"cluster_id": "c-0", "prs": [{"number": 1, "title": "PR1-updated"}]},
+            ],
+            "quality_scores": [{"pr_number": 1, "overall_score": 8.0}],
+            "alignment_scores": [{"pr_number": 1, "alignment_score": 9.0}],
+        }
+
+        f1 = _write_report(tmp_path / "r1.json", report1)
+        f2 = _write_report(tmp_path / "r2.json", report2)
+
+        merged = merge_reports([f1, f2])
+
+        # PR 1 should appear only once in clusters (from first report, since it was seen first)
+        all_pr_numbers = []
+        for c in merged["clusters"]:
+            for pr in c["prs"]:
+                all_pr_numbers.append(pr["number"])
+        assert all_pr_numbers.count(1) == 1
+
+        # Quality score should be updated to latest (8.0 from report2)
+        assert len(merged["quality_scores"]) == 1
+        assert merged["quality_scores"][0]["overall_score"] == 8.0
+
+        # Alignment score should be updated to latest (9.0 from report2)
+        assert len(merged["alignment_scores"]) == 1
+        assert merged["alignment_scores"][0]["alignment_score"] == 9.0
+
+    def test_merge_empty_reports(self, tmp_path: Path) -> None:
+        report1 = {
+            "repo": "owner/repo",
+            "timestamp": "",
+            "providers": [],
+            "clusters": [],
+            "quality_scores": [],
+            "alignment_scores": [],
+        }
+        report2 = {
+            "repo": "owner/repo",
+            "timestamp": "",
+            "providers": [],
+            "clusters": [],
+            "quality_scores": [],
+            "alignment_scores": [],
+        }
+
+        f1 = _write_report(tmp_path / "r1.json", report1)
+        f2 = _write_report(tmp_path / "r2.json", report2)
+
+        merged = merge_reports([f1, f2])
+
+        assert merged["clusters"] == []
+        assert merged["quality_scores"] == []
+        assert merged["alignment_scores"] == []
+        assert merged["summary"]["total_prs"] == 0
+        assert merged["summary"]["duplicate_clusters"] == 0
+
+    def test_merge_single_report(self, tmp_path: Path) -> None:
+        report = {
+            "repo": "owner/repo",
+            "timestamp": "2025-06-01T00:00:00Z",
+            "providers": ["model/a"],
+            "clusters": [
+                {"cluster_id": "c-0", "prs": [{"number": 1}]},
+            ],
+            "quality_scores": [{"pr_number": 1, "overall_score": 7.0}],
+            "alignment_scores": [],
+        }
+
+        f1 = _write_report(tmp_path / "r1.json", report)
+        merged = merge_reports([f1])
+
+        assert len(merged["clusters"]) == 1
+        assert len(merged["quality_scores"]) == 1
+        assert merged["summary"]["total_prs"] == 1

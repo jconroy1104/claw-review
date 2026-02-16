@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 from claw_review.github_client import PRData
 from claw_review.models import ModelResponse
@@ -77,7 +77,7 @@ def _error_response(provider: str) -> ModelResponse:
 def _mock_pool(responses: list[ModelResponse]) -> MagicMock:
     """Build a mock ModelPool that returns the given responses."""
     pool = MagicMock()
-    pool.query_all.return_value = responses
+    pool.query_all = AsyncMock(return_value=responses)
     return pool
 
 
@@ -135,7 +135,7 @@ class TestBuildScoringPrompt:
 
 
 class TestScorePrs:
-    def test_single_pr_with_valid_responses(self) -> None:
+    async def test_single_pr_with_valid_responses(self) -> None:
         pr = _make_pr(number=10)
         responses = [
             _score_response("model-a", code_quality=8, test_coverage=7,
@@ -147,7 +147,7 @@ class TestScorePrs:
         ]
         pool = _mock_pool(responses)
 
-        results = score_prs([pr], pool)
+        results = await score_prs([pr], pool)
 
         assert len(results) == 1
         qs = results[0]
@@ -156,7 +156,7 @@ class TestScorePrs:
         assert qs.overall_score > 0
         assert qs.summary in ("Good PR", "Decent PR")
 
-    def test_multiple_prs(self) -> None:
+    async def test_multiple_prs(self) -> None:
         prs = [_make_pr(number=i) for i in range(3)]
         responses = [
             _score_response("model-a", code_quality=8, test_coverage=7,
@@ -165,10 +165,10 @@ class TestScorePrs:
         ]
         pool = _mock_pool(responses)
 
-        results = score_prs(prs, pool)
+        results = await score_prs(prs, pool)
         assert len(results) == 3
 
-    def test_score_clamping_high(self) -> None:
+    async def test_score_clamping_high(self) -> None:
         """Values above 10 should be clamped to 10."""
         pr = _make_pr()
         payload = {
@@ -185,13 +185,13 @@ class TestScorePrs:
         )
         pool = _mock_pool([resp])
 
-        results = score_prs([pr], pool)
+        results = await score_prs([pr], pool)
         qs = results[0]
         for dim in qs.dimensions:
             for score_val in dim.scores.values():
                 assert score_val <= 10.0
 
-    def test_score_clamping_low(self) -> None:
+    async def test_score_clamping_low(self) -> None:
         """Values below 1 should be clamped to 1."""
         pr = _make_pr()
         payload = {
@@ -208,13 +208,13 @@ class TestScorePrs:
         )
         pool = _mock_pool([resp])
 
-        results = score_prs([pr], pool)
+        results = await score_prs([pr], pool)
         qs = results[0]
         for dim in qs.dimensions:
             for score_val in dim.scores.values():
                 assert score_val >= 1.0
 
-    def test_disagreement_flagging(self) -> None:
+    async def test_disagreement_flagging(self) -> None:
         """Spread > 3 on a dimension triggers needs_human_review."""
         pr = _make_pr()
         responses = [
@@ -227,13 +227,13 @@ class TestScorePrs:
         ]
         pool = _mock_pool(responses)
 
-        results = score_prs([pr], pool, disagreement_threshold=3.0)
+        results = await score_prs([pr], pool, disagreement_threshold=3.0)
         qs = results[0]
         assert qs.needs_human_review is True
         assert len(qs.disagreement_reasons) >= 1
         assert "code_quality" in qs.disagreement_reasons[0]
 
-    def test_no_disagreement_when_models_agree(self) -> None:
+    async def test_no_disagreement_when_models_agree(self) -> None:
         """Close scores should not flag for human review."""
         pr = _make_pr()
         responses = [
@@ -246,12 +246,12 @@ class TestScorePrs:
         ]
         pool = _mock_pool(responses)
 
-        results = score_prs([pr], pool, disagreement_threshold=3.0)
+        results = await score_prs([pr], pool, disagreement_threshold=3.0)
         qs = results[0]
         assert qs.needs_human_review is False
         assert qs.disagreement_reasons == []
 
-    def test_handles_model_errors(self) -> None:
+    async def test_handles_model_errors(self) -> None:
         """Error responses should be skipped, valid ones used."""
         pr = _make_pr()
         responses = [
@@ -262,7 +262,7 @@ class TestScorePrs:
         ]
         pool = _mock_pool(responses)
 
-        results = score_prs([pr], pool)
+        results = await score_prs([pr], pool)
         assert len(results) == 1
         qs = results[0]
         assert qs.summary == "Only valid model"
@@ -271,7 +271,7 @@ class TestScorePrs:
             assert "model-b" in dim.scores
             assert "model-a" not in dim.scores
 
-    def test_all_models_invalid_json_skips_pr(self) -> None:
+    async def test_all_models_invalid_json_skips_pr(self) -> None:
         """If all responses are unparseable, the PR is skipped."""
         pr = _make_pr()
         bad_resp1 = ModelResponse(
@@ -284,10 +284,10 @@ class TestScorePrs:
         )
         pool = _mock_pool([bad_resp1, bad_resp2])
 
-        results = score_prs([pr], pool)
+        results = await score_prs([pr], pool)
         assert len(results) == 0
 
-    def test_results_sorted_by_overall_score_descending(self) -> None:
+    async def test_results_sorted_by_overall_score_descending(self) -> None:
         """Results should be sorted best first."""
         prs = [_make_pr(number=i) for i in range(3)]
         # Return different scores for each PR
@@ -303,18 +303,18 @@ class TestScorePrs:
                              style_consistency=7)],
         ]
         pool = MagicMock()
-        pool.query_all.side_effect = responses_list
+        pool.query_all = AsyncMock(side_effect=responses_list)
 
-        results = score_prs(prs, pool)
+        results = await score_prs(prs, pool)
         scores = [r.overall_score for r in results]
         assert scores == sorted(scores, reverse=True)
 
-    def test_empty_prs_list(self) -> None:
+    async def test_empty_prs_list(self) -> None:
         pool = _mock_pool([])
-        results = score_prs([], pool)
+        results = await score_prs([], pool)
         assert results == []
 
-    def test_consensus_is_average(self) -> None:
+    async def test_consensus_is_average(self) -> None:
         """Consensus score for each dimension is the arithmetic mean."""
         pr = _make_pr()
         responses = [
@@ -327,7 +327,7 @@ class TestScorePrs:
         ]
         pool = _mock_pool(responses)
 
-        results = score_prs([pr], pool)
+        results = await score_prs([pr], pool)
         qs = results[0]
         dim_map = {d.dimension: d for d in qs.dimensions}
         assert dim_map["code_quality"].consensus == 7.0

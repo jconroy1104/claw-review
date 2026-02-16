@@ -13,6 +13,60 @@ DEFAULT_MODELS = [
     "google/gemini-2.0-flash-001",
 ]
 
+PRESETS: dict[str, dict] = {
+    "fast": {
+        "models": [
+            "meta-llama/llama-3.1-70b-instruct",
+            "mistralai/mistral-large-latest",
+            "google/gemini-2.0-flash-001",
+        ],
+        "description": "Fastest & cheapest. Good for initial scan.",
+        "est_cost_per_100_prs": "$0.15-0.30",
+    },
+    "balanced": {
+        "models": [
+            "anthropic/claude-sonnet-4",
+            "openai/gpt-4o-mini",
+            "google/gemini-2.0-flash-001",
+        ],
+        "description": "Best quality/cost ratio. Recommended for most use.",
+        "est_cost_per_100_prs": "$0.30-0.60",
+    },
+    "thorough": {
+        "models": [
+            "anthropic/claude-sonnet-4",
+            "openai/gpt-4o",
+            "google/gemini-2.0-flash-001",
+        ],
+        "description": "Highest quality. Sprint 1 default.",
+        "est_cost_per_100_prs": "$1.50-2.50",
+    },
+}
+
+
+def get_preset(name: str) -> dict:
+    """Get a preset configuration by name.
+
+    Args:
+        name: Preset name (fast, balanced, thorough)
+
+    Returns:
+        Preset config dict with models, description, est_cost_per_100_prs
+
+    Raises:
+        ValueError: If preset name is not recognized
+    """
+    if name not in PRESETS:
+        raise ValueError(
+            f"Unknown preset '{name}'. Available: {', '.join(PRESETS.keys())}"
+        )
+    return PRESETS[name]
+
+
+def list_presets() -> dict[str, dict]:
+    """Return all available presets."""
+    return PRESETS.copy()
+
 
 @dataclass
 class Config:
