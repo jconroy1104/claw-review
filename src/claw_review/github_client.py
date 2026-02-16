@@ -208,7 +208,7 @@ def fetch_repo_docs(repo: str, token: str) -> dict[str, str]:
     """
     headers = {
         "Authorization": f"Bearer {token}",
-        "Accept": "application/vnd.github.v3.raw",
+        "Accept": "application/vnd.github.v3+json",
         "X-GitHub-Api-Version": "2022-11-28",
     }
 
@@ -239,7 +239,7 @@ def fetch_repo_docs(repo: str, token: str) -> dict[str, str]:
                         docs[path] = decoded[:15_000]
                     elif isinstance(resp.text, str):
                         docs[path] = resp.text[:15_000]
-            except (httpx.HTTPError, KeyError):
+            except (httpx.HTTPError, KeyError, json.JSONDecodeError):
                 continue
 
     return docs

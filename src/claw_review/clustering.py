@@ -240,6 +240,8 @@ def cluster_intents(
     sim_matrix = cosine_similarity(embeddings_matrix)
 
     # DBSCAN expects a distance matrix, not similarity
+    # Clip to handle floating point precision (cosine_similarity can exceed 1.0)
+    np.clip(sim_matrix, 0, 1, out=sim_matrix)
     distance_matrix = 1 - sim_matrix
     eps = 1 - similarity_threshold  # Convert similarity threshold to distance
 
