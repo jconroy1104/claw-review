@@ -95,6 +95,61 @@ claw-review analyze --repo openclaw/openclaw --max-prs 20
 claw-review analyze --repo openclaw/openclaw --json-only
 ```
 
+### Model presets
+
+Choose a cost/quality tradeoff with `--preset`:
+
+```bash
+# List available presets
+claw-review presets
+
+# Fast & cheap (~$0.15-0.30 per 100 PRs)
+claw-review analyze --repo openclaw/openclaw --preset fast
+
+# Balanced — recommended (~$0.30-0.60 per 100 PRs)
+claw-review analyze --repo openclaw/openclaw --preset balanced
+
+# Thorough — highest quality (~$1.50-2.50 per 100 PRs)
+claw-review analyze --repo openclaw/openclaw --preset thorough
+```
+
+| Preset | Models | Est. Cost/100 PRs |
+|--------|--------|-------------------|
+| fast | Llama 3.1 70B, Mistral Large, Gemini Flash | $0.15-0.30 |
+| balanced | Claude Sonnet, GPT-4o-mini, Gemini Flash | $0.30-0.60 |
+| thorough | Claude Sonnet, GPT-4o, Gemini Flash | $1.50-2.50 |
+
+### Cost estimation
+
+```bash
+# Estimate cost before running (no API calls)
+claw-review estimate --repo openclaw/openclaw --preset balanced --max-prs 100
+
+# Set a budget limit — analysis halts if exceeded
+claw-review analyze --repo openclaw/openclaw --budget 5.00
+```
+
+### Batch processing & incremental analysis
+
+For large repos (1,000+ PRs), use batching and incremental mode:
+
+```bash
+# Process in batches of 50 (default) with checkpointing
+claw-review analyze --repo openclaw/openclaw --batch-size 50
+
+# Incremental: only analyze new PRs (enabled by default)
+claw-review analyze --repo openclaw/openclaw
+
+# Force re-analysis of all PRs
+claw-review analyze --repo openclaw/openclaw --force
+
+# Check what's been analyzed so far
+claw-review status --repo openclaw/openclaw
+
+# Merge results from multiple runs
+claw-review merge report1.json report2.json -o combined-report
+```
+
 ### Regenerate report
 
 ```bash
@@ -149,16 +204,29 @@ Consensus: weighted average. If models disagree by >3 points on any dimension, t
 
 PR data is cached locally in `.claw-review-cache/` to avoid redundant GitHub API calls. Use `--no-cache` to force fresh fetches.
 
-## Cost estimate
+## Cost
 
-For 50 PRs with 3 models:
-- ~150 intent extraction calls (~$1-2)
-- ~50-100 quality scoring calls (~$2-4) — only duplicates
-- ~150 alignment calls (~$2-4)
-- ~50 embedding calls (~$0.01)
-- **Total: ~$5-10 per run**
+Use `claw-review estimate` to get a cost projection before running. Costs depend on the preset:
 
-Adjust `--max-prs` and use `--skip-alignment` or `--skip-quality` to reduce costs.
+| Preset | 100 PRs | 1,000 PRs | 6,000 PRs |
+|--------|---------|-----------|-----------|
+| fast | $0.15-0.30 | $1.50-3.00 | $9-18 |
+| balanced | $0.30-0.60 | $3-6 | $18-36 |
+| thorough | $1.50-2.50 | $15-25 | $90-150 |
+
+Use `--skip-alignment`, `--skip-quality`, or `--budget` to control spend.
+
+## All commands
+
+| Command | Description |
+|---------|-------------|
+| `claw-review analyze` | Run full PR analysis |
+| `claw-review check` | Verify configuration and API access |
+| `claw-review presets` | List available model presets |
+| `claw-review estimate` | Estimate cost without API calls |
+| `claw-review status` | Show analysis state for a repo |
+| `claw-review merge` | Combine multiple JSON reports |
+| `claw-review regenerate` | Regenerate HTML from JSON |
 
 ## License
 
