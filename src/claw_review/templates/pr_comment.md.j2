@@ -1,0 +1,39 @@
+## 🦞 {{ marker }}
+
+| Dimension | Score |
+|-----------|-------|
+{% for name, score in dimensions.items() -%}
+| {{ name }} | {{ score }}/10 |
+{% endfor -%}
+
+**Overall: {{ overall }}/10** · Recommendation: {{ recommendation }}
+{% if per_model and models %}
+
+<details>
+<summary>Per-model breakdown</summary>
+
+| Dimension |{% for model in models %} {{ model }} |{% endfor %}
+
+|-----------|{% for model in models %}-------|{% endfor %}
+
+{% for dim in dimensions -%}
+| {{ dim }} |{% for model in models %} {{ per_model.get(model, {}).get(dim, "N/A") }} |{% endfor %}
+
+{% endfor -%}
+</details>
+{% endif %}
+{% if duplicates %}
+
+⚠️ **Potential duplicates found:** {{ duplicates | join(", ") }}
+{% endif %}
+{% if alignment %}
+
+### Vision Alignment
+
+**Score: {{ alignment.score }}/10**
+
+{{ alignment.summary }}
+{% endif %}
+
+---
+*Analyzed by [claw-review](https://github.com/jconroy1104/claw-review) using multi-model consensus*

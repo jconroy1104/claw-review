@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClawReview Dashboard — {{ repo }}</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --green: #3fb950;
+            --yellow: #d29922;
+            --red: #f85149;
+            --orange: #db6d28;
+            --purple: #bc8cff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .dashboard-header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dashboard-header h1 { font-size: 1.5rem; }
+        .dashboard-header .meta { color: var(--text-muted); font-size: 0.85rem; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .summary-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .summary-card .number { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+        .summary-card .label { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.75rem 1.25rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .tab-btn:hover { color: var(--text); }
+        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filters label { color: var(--text-muted); font-size: 0.85rem; }
+        .filters input, .filters select {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.4rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        .filters input:focus, .filters select:focus { outline: none; border-color: var(--accent); }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        .data-table th {
+            background: var(--surface);
+            color: var(--text-muted);
+            text-align: left;
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+        .data-table th:hover { color: var(--accent); }
+        .data-table th .sort-arrow { margin-left: 0.3rem; font-size: 0.7rem; }
+        .data-table td {
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        .data-table tr:hover { background: rgba(88, 166, 255, 0.05); }
+        .data-table tr.expandable { cursor: pointer; }
+        .data-table .detail-row { display: none; }
+        .data-table .detail-row.open { display: table-row; }
+        .data-table .detail-row td {
+            padding: 0.8rem 1.2rem;
+            background: var(--surface);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .card.duplicate { border-left: 3px solid var(--yellow); }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .card-header h3 { font-size: 1rem; }
+        .card-body { font-size: 0.9rem; color: var(--text-muted); }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-merge { background: rgba(63, 185, 80, 0.2); color: var(--green); }
+        .badge-review { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+        .badge-discuss { background: rgba(188, 140, 255, 0.2); color: var(--purple); }
+        .badge-close { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+        .badge-category { background: rgba(88, 166, 255, 0.2); color: var(--accent); }
+        .badge-dup { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+
+        /* Score colours */
+        .score-high { color: var(--green); }
+        .score-med { color: var(--yellow); }
+        .score-low { color: var(--red); }
+
+        /* Score bar */
+        .score-bar { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; min-width: 60px; }
+        .score-fill { height: 100%; border-radius: 3px; }
+        .score-fill.high { background: var(--green); }
+        .score-fill.med { background: var(--yellow); }
+        .score-fill.low { background: var(--red); }
+
+        /* Cluster PR list */
+        .cluster-pr {
+            display: grid;
+            grid-template-columns: 40px 1fr 80px;
+            gap: 0.5rem;
+            align-items: center;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+        .cluster-pr:last-child { border-bottom: none; }
+        .cluster-pr .rank { font-weight: 700; text-align: center; }
+        .cluster-pr .rank.best { color: var(--green); }
+
+        /* Cost bar chart */
+        .cost-bar-container { margin: 0.5rem 0; }
+        .cost-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.6rem;
+        }
+        .cost-bar-label { width: 180px; font-size: 0.85rem; text-align: right; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cost-bar-track { flex: 1; height: 20px; background: var(--border); border-radius: 3px; overflow: hidden; }
+        .cost-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
+        .cost-bar-value { width: 80px; font-size: 0.85rem; color: var(--text); }
+
+        /* Category chart */
+        .category-chart { display: flex; flex-direction: column; gap: 0.5rem; }
+        .cat-row { display: flex; align-items: center; gap: 0.8rem; }
+        .cat-label { width: 100px; font-size: 0.85rem; text-align: right; color: var(--text-muted); }
+        .cat-track { flex: 1; height: 16px; background: var(--border); border-radius: 3px; overflow: hidden; }
+        .cat-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+        .cat-count { width: 40px; font-size: 0.85rem; color: var(--text); }
+
+        /* Expandable */
+        .expandable-trigger { cursor: pointer; }
+        .expandable-content { display: none; margin-top: 0.5rem; }
+        .expandable-content.open { display: block; }
+
+        /* Recommendation distribution */
+        .rec-dist { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .rec-card { text-align: center; padding: 0.5rem 1rem; border-radius: 6px; min-width: 80px; }
+        .rec-card .count { font-size: 1.4rem; font-weight: 700; }
+        .rec-card .label { font-size: 0.75rem; text-transform: uppercase; }
+
+        /* Drift list */
+        .drift-list { margin: 0.3rem 0 0 1rem; font-size: 0.85rem; color: var(--text-muted); }
+        .drift-list li { margin: 0.15rem 0; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+            .summary-cards { grid-template-columns: repeat(2, 1fr); }
+            .filters { flex-direction: column; }
+            .data-table { font-size: 0.8rem; }
+            .cost-bar-label { width: 100px; }
+        }
+
+        footer {
+            margin-top: 2rem;
+            padding: 1rem 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-header">
+        <h1>&#x1F99E; ClawReview Dashboard</h1>
+        <div class="meta">
+            <strong>{{ repo }}</strong> &middot; Generated {{ generated_at }}
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="summary-card">
+                <div class="number" id="stat-total-prs">{{ summary.total_prs }}</div>
+                <div class="label">Total PRs</div>
+            </div>
+            <div class="summary-card">
+                <div class="number" id="stat-dup-clusters">{{ summary.duplicate_clusters }}</div>
+                <div class="label">Duplicate Clusters</div>
+            </div>
+            <div class="summary-card">
+                <div class="number" id="stat-drift-flags">{{ summary.flagged_for_drift }}</div>
+                <div class="label">Drift Flags</div>
+            </div>
+            <div class="summary-card">
+                <div class="number" id="stat-avg-score">{{ avg_quality_score }}</div>
+                <div class="label">Avg Quality Score</div>
+            </div>
+            <div class="summary-card">
+                <div class="number" id="stat-total-cost">${{ total_cost }}</div>
+                <div class="label">Total Cost</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="overview">Overview</button>
+            <button class="tab-btn" data-tab="clusters">Clusters</button>
+            <button class="tab-btn" data-tab="quality">Quality</button>
+            <button class="tab-btn" data-tab="alignment">Alignment</button>
+            <button class="tab-btn" data-tab="cost">Cost</button>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div>
+                <label for="search-input">Search:</label>
+                <input type="text" id="search-input" placeholder="Filter by title...">
+            </div>
+            <div>
+                <label for="rec-filter">Recommendation:</label>
+                <select id="rec-filter">
+                    <option value="">All</option>
+                    <option value="MERGE">MERGE</option>
+                    <option value="REVIEW">REVIEW</option>
+                    <option value="DISCUSS">DISCUSS</option>
+                    <option value="CLOSE">CLOSE</option>
+                </select>
+            </div>
+            <div>
+                <label for="score-min">Score:</label>
+                <input type="number" id="score-min" placeholder="Min" min="0" max="10" step="0.1" style="width:60px">
+                <span style="color:var(--text-muted)">-</span>
+                <input type="number" id="score-max" placeholder="Max" min="0" max="10" step="0.1" style="width:60px">
+            </div>
+        </div>
+
+        <!-- Overview Tab -->
+        <div class="tab-panel active" id="panel-overview">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div class="card">
+                    <div class="card-header"><h3>Category Breakdown</h3></div>
+                    <div class="card-body">
+                        <div class="category-chart" id="category-chart"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3>Recommendation Distribution</h3></div>
+                    <div class="card-body">
+                        <div class="rec-dist" id="rec-dist"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clusters Tab -->
+        <div class="tab-panel" id="panel-clusters">
+            <div id="clusters-container"></div>
+        </div>
+
+        <!-- Quality Tab -->
+        <div class="tab-panel" id="panel-quality">
+            <table class="data-table" id="quality-table">
+                <thead>
+                    <tr>
+                        <th data-sort="pr_number">PR # <span class="sort-arrow"></span></th>
+                        <th data-sort="title">Title <span class="sort-arrow"></span></th>
+                        <th data-sort="overall_score">Score <span class="sort-arrow"></span></th>
+                        <th>Dimensions</th>
+                        <th>Review</th>
+                    </tr>
+                </thead>
+                <tbody id="quality-body"></tbody>
+            </table>
+        </div>
+
+        <!-- Alignment Tab -->
+        <div class="tab-panel" id="panel-alignment">
+            <table class="data-table" id="alignment-table">
+                <thead>
+                    <tr>
+                        <th data-sort="pr_number">PR # <span class="sort-arrow"></span></th>
+                        <th data-sort="title">Title <span class="sort-arrow"></span></th>
+                        <th data-sort="alignment_score">Score <span class="sort-arrow"></span></th>
+                        <th>Recommendation</th>
+                        <th data-sort="confidence">Confidence <span class="sort-arrow"></span></th>
+                    </tr>
+                </thead>
+                <tbody id="alignment-body"></tbody>
+            </table>
+        </div>
+
+        <!-- Cost Tab -->
+        <div class="tab-panel" id="panel-cost">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="summary-card" id="cost-total-card"></div>
+                <div class="summary-card" id="cost-requests-card"></div>
+                <div class="summary-card" id="cost-input-card"></div>
+                <div class="summary-card" id="cost-output-card"></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>Cost per Model</h3></div>
+                <div class="card-body">
+                    <div class="cost-bar-container" id="cost-chart"></div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            Generated by <strong>claw-review</strong> &middot; Multi-model consensus PR triage
+        </footer>
+    </div>
+
+    <script>
+    (function() {
+        "use strict";
+
+        var DATA = {{ data_json }};
+
+        var clusters = DATA.clusters || [];
+        var qualityScores = DATA.quality_scores || [];
+        var alignmentScores = DATA.alignment_scores || [];
+        var costData = DATA.cost || {};
+
+        // ---- Tabs ----
+        var tabBtns = document.querySelectorAll(".tab-btn");
+        tabBtns.forEach(function(btn) {
+            btn.addEventListener("click", function() {
+                tabBtns.forEach(function(b) { b.classList.remove("active"); });
+                btn.classList.add("active");
+                document.querySelectorAll(".tab-panel").forEach(function(p) { p.classList.remove("active"); });
+                var panel = document.getElementById("panel-" + btn.getAttribute("data-tab"));
+                if (panel) panel.classList.add("active");
+            });
+        });
+
+        // ---- Helpers ----
+        function scoreClass(s) {
+            if (s >= 8) return "high";
+            if (s >= 5) return "med";
+            return "low";
+        }
+        function scoreColor(s) {
+            if (s >= 8) return "score-high";
+            if (s >= 5) return "score-med";
+            return "score-low";
+        }
+        function recBadge(rec) {
+            return '<span class="badge badge-' + (rec || "").toLowerCase() + '">' + (rec || "N/A") + '</span>';
+        }
+        function escapeHtml(s) {
+            var d = document.createElement("div");
+            d.appendChild(document.createTextNode(s || ""));
+            return d.innerHTML;
+        }
+
+        // ---- Overview: Category Chart ----
+        function renderCategoryChart() {
+            var counts = {};
+            clusters.forEach(function(c) {
+                var cat = c.category || "unknown";
+                counts[cat] = (counts[cat] || 0) + (c.prs ? c.prs.length : 0);
+            });
+            var maxCount = Math.max.apply(null, Object.values(counts).concat([1]));
+            var html = "";
+            Object.keys(counts).sort().forEach(function(cat) {
+                var pct = (counts[cat] / maxCount * 100).toFixed(0);
+                html += '<div class="cat-row"><div class="cat-label">' + escapeHtml(cat) + '</div>';
+                html += '<div class="cat-track"><div class="cat-fill" style="width:' + pct + '%"></div></div>';
+                html += '<div class="cat-count">' + counts[cat] + '</div></div>';
+            });
+            if (!html) html = '<div style="color:var(--text-muted)">No cluster data</div>';
+            document.getElementById("category-chart").innerHTML = html;
+        }
+
+        // ---- Overview: Recommendation Distribution ----
+        function renderRecDist() {
+            var counts = { MERGE: 0, REVIEW: 0, DISCUSS: 0, CLOSE: 0 };
+            alignmentScores.forEach(function(a) {
+                var rec = (a.recommendation || "").toUpperCase();
+                if (rec in counts) counts[rec]++;
+            });
+            var colors = { MERGE: "var(--green)", REVIEW: "var(--yellow)", DISCUSS: "var(--purple)", CLOSE: "var(--red)" };
+            var html = "";
+            ["MERGE", "REVIEW", "DISCUSS", "CLOSE"].forEach(function(rec) {
+                html += '<div class="rec-card" style="background:' + colors[rec] + '22">';
+                html += '<div class="count" style="color:' + colors[rec] + '">' + counts[rec] + '</div>';
+                html += '<div class="label" style="color:' + colors[rec] + '">' + rec + '</div></div>';
+            });
+            document.getElementById("rec-dist").innerHTML = html;
+        }
+
+        // ---- Clusters ----
+        function renderClusters(filter) {
+            var container = document.getElementById("clusters-container");
+            var html = "";
+            clusters.forEach(function(c, idx) {
+                var isDup = c.prs && c.prs.length > 1;
+                var prs = c.prs || [];
+                if (filter) {
+                    prs = prs.filter(function(p) { return (p.title || "").toLowerCase().indexOf(filter) >= 0; });
+                    if (prs.length === 0) return;
+                }
+                html += '<div class="card' + (isDup ? ' duplicate' : '') + '">';
+                html += '<div class="card-header"><h3>' + escapeHtml(c.intent_summary || "Cluster " + (idx+1)) + '</h3>';
+                html += '<div>';
+                if (isDup) html += '<span class="badge badge-dup">' + (c.prs ? c.prs.length : 0) + ' duplicates</span> ';
+                html += '<span class="badge badge-category">' + escapeHtml(c.category || "unknown") + '</span>';
+                html += ' <span style="color:var(--text-muted);font-size:0.8rem">area: ' + escapeHtml(c.affected_area || "?") + ' &middot; confidence: ' + ((c.confidence || 0) * 100).toFixed(0) + '%</span>';
+                html += '</div></div>';
+                html += '<div class="card-body">';
+                prs.forEach(function(pr, rank) {
+                    var qs = pr.quality_score;
+                    html += '<div class="cluster-pr">';
+                    html += '<div class="rank' + (rank === 0 && isDup ? ' best' : '') + '">#' + (rank+1) + '</div>';
+                    html += '<div>' + escapeHtml(pr.title || "") + ' <span style="color:var(--text-muted);font-size:0.8rem">#' + (pr.number || "?") + '</span></div>';
+                    if (typeof qs === "number") {
+                        html += '<div class="' + scoreColor(qs) + '">' + qs.toFixed(1) + '/10</div>';
+                    } else {
+                        html += '<div style="color:var(--text-muted)">-</div>';
+                    }
+                    html += '</div>';
+                });
+                html += '</div></div>';
+            });
+            if (!html) html = '<div class="card"><div class="card-body" style="color:var(--text-muted)">No clusters match the current filter.</div></div>';
+            container.innerHTML = html;
+        }
+
+        // ---- Quality Table ----
+        var qualitySortKey = "overall_score";
+        var qualitySortAsc = false;
+
+        function renderQualityTable(filter, minScore, maxScore) {
+            var tbody = document.getElementById("quality-body");
+            var items = qualityScores.slice();
+            if (filter) {
+                items = items.filter(function(q) { return (q.title || "").toLowerCase().indexOf(filter) >= 0; });
+            }
+            if (minScore !== null && minScore !== undefined && minScore !== "") {
+                items = items.filter(function(q) { return (q.overall_score || 0) >= parseFloat(minScore); });
+            }
+            if (maxScore !== null && maxScore !== undefined && maxScore !== "") {
+                items = items.filter(function(q) { return (q.overall_score || 0) <= parseFloat(maxScore); });
+            }
+            items.sort(function(a, b) {
+                var av = a[qualitySortKey] || 0;
+                var bv = b[qualitySortKey] || 0;
+                if (typeof av === "string") { av = av.toLowerCase(); bv = (bv || "").toLowerCase(); }
+                if (av < bv) return qualitySortAsc ? -1 : 1;
+                if (av > bv) return qualitySortAsc ? 1 : -1;
+                return 0;
+            });
+            var html = "";
+            items.forEach(function(q, idx) {
+                var sc = q.overall_score || 0;
+                var dims = q.dimensions || [];
+                html += '<tr class="expandable" data-idx="q' + idx + '">';
+                html += '<td>#' + (q.pr_number || "?") + '</td>';
+                html += '<td>' + escapeHtml(q.title || "") + '</td>';
+                html += '<td><span class="' + scoreColor(sc) + '" style="font-weight:700">' + sc.toFixed(1) + '</span>';
+                html += '<div class="score-bar"><div class="score-fill ' + scoreClass(sc) + '" style="width:' + (sc*10) + '%"></div></div></td>';
+                html += '<td>' + dims.length + ' dims</td>';
+                html += '<td>' + (q.needs_human_review ? '<span style="color:var(--orange);font-weight:600">Review</span>' : '<span style="color:var(--green)">OK</span>') + '</td>';
+                html += '</tr>';
+                html += '<tr class="detail-row" id="detail-q' + idx + '"><td colspan="5">';
+                html += '<strong>Summary:</strong> ' + escapeHtml(q.summary || "N/A") + '<br>';
+                if (dims.length > 0) {
+                    html += '<table style="margin-top:0.5rem;width:100%;font-size:0.8rem"><tr><th style="cursor:default">Dimension</th><th style="cursor:default">Consensus</th><th style="cursor:default">Scores</th><th style="cursor:default">Flagged</th></tr>';
+                    dims.forEach(function(d) {
+                        var scores = d.scores || {};
+                        var scoreStr = Object.keys(scores).map(function(m) { return m.split("/").pop() + ": " + scores[m]; }).join(", ");
+                        html += '<tr><td>' + escapeHtml(d.dimension || "") + '</td><td class="' + scoreColor(d.consensus || 0) + '">' + (d.consensus || 0).toFixed(1) + '</td><td>' + escapeHtml(scoreStr) + '</td><td>' + (d.flagged ? "Yes" : "No") + '</td></tr>';
+                    });
+                    html += '</table>';
+                }
+                if (q.disagreement_reasons && q.disagreement_reasons.length > 0) {
+                    html += '<div style="margin-top:0.5rem;color:var(--orange)"><strong>Disagreement:</strong> ' + q.disagreement_reasons.map(escapeHtml).join(", ") + '</div>';
+                }
+                html += '</td></tr>';
+            });
+            if (!html) html = '<tr><td colspan="5" style="color:var(--text-muted);text-align:center;padding:2rem">No quality scores match the current filter.</td></tr>';
+            tbody.innerHTML = html;
+            bindExpandable();
+        }
+
+        // ---- Alignment Table ----
+        var alignSortKey = "alignment_score";
+        var alignSortAsc = false;
+
+        function renderAlignmentTable(filter, recFilter) {
+            var tbody = document.getElementById("alignment-body");
+            var items = alignmentScores.slice();
+            if (filter) {
+                items = items.filter(function(a) { return (a.title || "").toLowerCase().indexOf(filter) >= 0; });
+            }
+            if (recFilter) {
+                items = items.filter(function(a) { return (a.recommendation || "").toUpperCase() === recFilter; });
+            }
+            items.sort(function(a, b) {
+                var av = a[alignSortKey] || 0;
+                var bv = b[alignSortKey] || 0;
+                if (typeof av === "string") { av = av.toLowerCase(); bv = (bv || "").toLowerCase(); }
+                if (av < bv) return alignSortAsc ? -1 : 1;
+                if (av > bv) return alignSortAsc ? 1 : -1;
+                return 0;
+            });
+            var html = "";
+            items.forEach(function(a, idx) {
+                var sc = a.alignment_score || 0;
+                html += '<tr class="expandable" data-idx="a' + idx + '">';
+                html += '<td>#' + (a.pr_number || "?") + '</td>';
+                html += '<td>' + escapeHtml(a.title || "") + '</td>';
+                html += '<td><span class="' + scoreColor(sc) + '" style="font-weight:700">' + sc.toFixed(1) + '</span></td>';
+                html += '<td>' + recBadge(a.recommendation) + '</td>';
+                html += '<td>' + ((a.confidence || 0) * 100).toFixed(0) + '%</td>';
+                html += '</tr>';
+                html += '<tr class="detail-row" id="detail-a' + idx + '"><td colspan="5">';
+                html += '<strong>Rationale:</strong> ' + escapeHtml(a.rationale || "N/A") + '<br>';
+                if (a.scores_by_provider) {
+                    var provStr = Object.keys(a.scores_by_provider).map(function(m) { return m.split("/").pop() + ": " + a.scores_by_provider[m]; }).join(", ");
+                    html += '<strong>Scores:</strong> ' + escapeHtml(provStr) + '<br>';
+                }
+                if (a.aligned_aspects && a.aligned_aspects.length) {
+                    html += '<strong>Aligned:</strong> ' + a.aligned_aspects.map(escapeHtml).join(", ") + '<br>';
+                }
+                if (a.drift_concerns && a.drift_concerns.length) {
+                    html += '<strong style="color:var(--red)">Drift concerns:</strong><ul class="drift-list">';
+                    a.drift_concerns.forEach(function(d) { html += '<li>' + escapeHtml(d) + '</li>'; });
+                    html += '</ul>';
+                }
+                html += '</td></tr>';
+            });
+            if (!html) html = '<tr><td colspan="5" style="color:var(--text-muted);text-align:center;padding:2rem">No alignment scores match the current filter.</td></tr>';
+            tbody.innerHTML = html;
+            bindExpandable();
+        }
+
+        // ---- Cost Tab ----
+        function renderCost() {
+            var total = costData.total_cost || 0;
+            var requests = costData.total_requests || 0;
+            var inputTk = costData.total_input_tokens || 0;
+            var outputTk = costData.total_output_tokens || 0;
+            var models = costData.models || {};
+
+            document.getElementById("cost-total-card").innerHTML = '<div class="number">$' + total.toFixed(4) + '</div><div class="label">Total Cost</div>';
+            document.getElementById("cost-requests-card").innerHTML = '<div class="number">' + requests + '</div><div class="label">Requests</div>';
+            document.getElementById("cost-input-card").innerHTML = '<div class="number">' + inputTk.toLocaleString() + '</div><div class="label">Input Tokens</div>';
+            document.getElementById("cost-output-card").innerHTML = '<div class="number">' + outputTk.toLocaleString() + '</div><div class="label">Output Tokens</div>';
+
+            var maxCost = 0;
+            Object.keys(models).forEach(function(m) { if (models[m].cost > maxCost) maxCost = models[m].cost; });
+            if (maxCost === 0) maxCost = 1;
+
+            var html = "";
+            var sorted = Object.keys(models).sort(function(a, b) { return (models[b].cost || 0) - (models[a].cost || 0); });
+            sorted.forEach(function(m) {
+                var mc = models[m];
+                var pct = (mc.cost / maxCost * 100).toFixed(0);
+                html += '<div class="cost-bar-row">';
+                html += '<div class="cost-bar-label">' + escapeHtml(m.split("/").pop()) + '</div>';
+                html += '<div class="cost-bar-track"><div class="cost-bar-fill" style="width:' + pct + '%"></div></div>';
+                html += '<div class="cost-bar-value">$' + (mc.cost || 0).toFixed(4) + '</div>';
+                html += '</div>';
+            });
+            if (!html) html = '<div style="color:var(--text-muted)">No cost data available</div>';
+            document.getElementById("cost-chart").innerHTML = html;
+        }
+
+        // ---- Expandable rows ----
+        function bindExpandable() {
+            document.querySelectorAll("tr.expandable").forEach(function(row) {
+                row.onclick = function() {
+                    var idx = row.getAttribute("data-idx");
+                    var detail = document.getElementById("detail-" + idx);
+                    if (detail) detail.classList.toggle("open");
+                };
+            });
+        }
+
+        // ---- Table sorting ----
+        document.querySelectorAll("#quality-table th[data-sort]").forEach(function(th) {
+            th.addEventListener("click", function() {
+                var key = th.getAttribute("data-sort");
+                if (qualitySortKey === key) { qualitySortAsc = !qualitySortAsc; }
+                else { qualitySortKey = key; qualitySortAsc = true; }
+                applyFilters();
+            });
+        });
+        document.querySelectorAll("#alignment-table th[data-sort]").forEach(function(th) {
+            th.addEventListener("click", function() {
+                var key = th.getAttribute("data-sort");
+                if (alignSortKey === key) { alignSortAsc = !alignSortAsc; }
+                else { alignSortKey = key; alignSortAsc = true; }
+                applyFilters();
+            });
+        });
+
+        // ---- Filters ----
+        function applyFilters() {
+            var search = (document.getElementById("search-input").value || "").toLowerCase();
+            var rec = document.getElementById("rec-filter").value;
+            var minS = document.getElementById("score-min").value;
+            var maxS = document.getElementById("score-max").value;
+
+            renderClusters(search);
+            renderQualityTable(search, minS, maxS);
+            renderAlignmentTable(search, rec);
+        }
+
+        document.getElementById("search-input").addEventListener("input", applyFilters);
+        document.getElementById("rec-filter").addEventListener("change", applyFilters);
+        document.getElementById("score-min").addEventListener("input", applyFilters);
+        document.getElementById("score-max").addEventListener("input", applyFilters);
+
+        // ---- Initial render ----
+        renderCategoryChart();
+        renderRecDist();
+        renderClusters("");
+        renderQualityTable("", null, null);
+        renderAlignmentTable("", "");
+        renderCost();
+    })();
+    </script>
+</body>
+</html>

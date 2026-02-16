@@ -1,0 +1,22 @@
+name: ClawReview PR Triage
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install claw-review
+        run: pip install claw-review
+      - name: Run analysis
+        run: |
+          claw-review analyze --repo ${{ "{{" }} github.repository {{ "}}" }} --max-prs 1 --preset {{ preset }}{% if extra_flags %} {{ extra_flags }}{% endif %}
+
+        env:
+          GITHUB_TOKEN: ${{ "{{" }} secrets.GITHUB_TOKEN {{ "}}" }}
+          OPENROUTER_API_KEY: ${{ "{{" }} secrets.OPENROUTER_API_KEY {{ "}}" }}
