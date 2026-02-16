@@ -345,3 +345,261 @@ This project demonstrates general multi-model consensus concepts using standard
 techniques (majority voting, weighted averaging, DBSCAN clustering). It does NOT
 implement any proprietary fusion algorithms. All consensus logic should remain
 intentionally simple.
+
+
+# Sprint 3 Context — Platform Architecture, GitHub Integration & Multi-Domain
+
+## Sprint 2 Results (Live Run)
+
+- **Runtime:** ~7 minutes (3x faster than Sprint 1's 20 minutes)
+- **Preset:** balanced (Claude Sonnet + GPT-4o-mini + Gemini Flash)
+- **Findings:** 1 duplicate cluster, 3 vision drift flags (CLOSE/DISCUSS/REVIEW)
+- **Tests:** 298 passing, 99% coverage, 0 failures
+- **CLI:** 7 commands (analyze, check, estimate, presets, status, merge, regenerate)
+
+## Sprint 3 Goals
+
+1. **Platform core** — Extract domain-agnostic consensus engine with adapter pattern
+2. **Domain adapters** — Cybersecurity (SIEM) + fraud detection prompt templates
+3. **GitHub integration** — Webhook receiver, PR comment bot, Actions workflow
+4. **Dashboard** — Interactive web UI for exploring analysis results
+
+## Architecture After Sprint 3
+
+```
+src/claw_review/
+├── platform/                  ← NEW: Domain-agnostic core
+│   ├── __init__.py
+│   ├── interfaces.py          ← DataAdapter, DomainConfig, DataItem, AnalysisResult
+│   ├── engine.py              ← ConsensusEngine (generic pipeline orchestrator)
+│   └── registry.py            ← AdapterRegistry (register/discover domains)
+├── adapters/                  ← NEW: Data source adapters
+│   ├── __init__.py
+│   ├── github_pr.py           ← GitHubPRAdapter (refactored from github_client.py)
+│   ├── cybersecurity.py       ← SIEM alert adapter (JSON/CEF input)
+│   └── fraud_detection.py     ← Transaction adapter (JSON/CSV input)
+├── domains/                   ← NEW: Domain-specific configs
+│   ├── __init__.py
+│   ├── github_pr.py           ← Prompts, dimensions, thresholds for PR triage
+│   ├── cybersecurity.py       ← Prompts, dimensions for threat analysis
+│   └── fraud_detection.py     ← Prompts, dimensions for fraud scoring
+├── github/                    ← NEW: GitHub App integration
+│   ├── __init__.py
+│   ├── app.py                 ← GitHub App auth (JWT, installation tokens)
+│   ├── webhook.py             ← Webhook receiver (FastAPI/Flask)
+│   ├── commenter.py           ← PR comment formatter + poster
+│   └── actions.py             ← GitHub Actions workflow generator
+├── dashboard/                 ← NEW: Interactive web dashboard
+│   ├── __init__.py
+│   ├── app.py                 ← Dashboard server or static generator
+│   ├── data_loader.py         ← Load AnalysisResult into dashboard format
+│   └── static/                ← CSS, JS assets
+├── templates/
+│   ├── pr_comment.md.j2       ← PR comment Jinja2 template
+│   ├── actions_workflow.yml.j2 ← GitHub Actions workflow template
+│   └── dashboard.html.j2      ← Dashboard template (or .jsx)
+│
+│   ── Existing Sprint 1/2 files (unchanged) ──
+├── __init__.py
+├── config.py                  ← Updated: PRESETS (Sprint 2)
+├── costs.py                   ← Sprint 2: cost tracking
+├── state.py                   ← Sprint 2: incremental analysis
+├── batch.py                   ← Sprint 2: batch processing
+├── github_client.py           ← Original (kept for backward compat)
+├── models.py                  ← Sprint 2: async httpx
+├── clustering.py              ← Thin wrapper → ConsensusEngine
+├── scoring.py                 ← Thin wrapper → ConsensusEngine
+├── alignment.py               ← Thin wrapper → ConsensusEngine
+├── report.py                  ← Updated: multi-domain support
+└── cli.py                     ← Updated: new commands
+```
+
+## Platform Interfaces
+
+### DataAdapter Protocol
+```python
+from typing import Protocol, Any
+
+class DataItem:
+    """Universal container for any item to analyze."""
+    id: str
+    title: str
+    body: str
+    metadata: dict[str, Any]
+    raw: dict[str, Any]
+
+class DataAdapter(Protocol):
+    """Interface for domain-specific data sources."""
+    domain: str
+
+    async def fetch_items(self, source: str, max_items: int, **kwargs) -> list[DataItem]:
+        ...
+
+    async def fetch_context_docs(self, source: str, **kwargs) -> dict[str, str]:
+        ...
+
+    def format_item_for_prompt(self, item: DataItem) -> str:
+        ...
+```
+
+### DomainConfig
+```python
+@dataclass
+class DomainConfig:
+    domain: str
+    scoring_dimensions: list[str]
+    clustering_prompt: str
+    scoring_prompt: str
+    alignment_prompt: str
+    recommendation_levels: list[str]
+    default_thresholds: dict[str, float]
+```
+
+### ConsensusEngine Usage
+```python
+# CORRECT: Domain-agnostic analysis
+engine = ConsensusEngine(model_pool=pool, domain_config=GITHUB_PR_CONFIG)
+result = await engine.analyze(items=pr_items, context_docs=readme_docs)
+
+# Same engine, different domain
+engine = ConsensusEngine(model_pool=pool, domain_config=CYBERSECURITY_CONFIG)
+result = await engine.analyze(items=siem_alerts, context_docs=threat_model)
+```
+
+## Domain Configurations
+
+### GitHub PR (existing, refactored)
+- Dimensions: code_quality, test_coverage, documentation, architecture_fit, complexity
+- Recommendations: MERGE, REVIEW, DISCUSS, CLOSE
+- Prompts: extracted from existing clustering.py, scoring.py, alignment.py
+
+### Cybersecurity (NEW)
+- Dimensions: threat_severity, confidence, attack_sophistication, asset_criticality, actionability
+- Recommendations: BLOCK, INVESTIGATE, MONITOR, DISMISS
+- Input: SIEM alert JSON (Splunk, ElasticSearch, generic CEF)
+
+### Fraud Detection (NEW)
+- Dimensions: anomaly_score, pattern_match, velocity_risk, geographic_risk, amount_deviation
+- Recommendations: APPROVE, FLAG, HOLD, BLOCK
+- Input: Transaction JSON/CSV
+
+## GitHub Integration Patterns
+
+### Webhook Signature Verification
+```python
+# CORRECT: HMAC-SHA256 signature check
+import hmac
+import hashlib
+
+def verify_webhook_signature(payload: bytes, signature: str, secret: str) -> bool:
+    expected = hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(f"sha256={expected}", signature)
+```
+
+### GitHub App JWT Authentication
+```python
+# CORRECT: JWT for GitHub App auth
+import jwt
+import time
+
+def generate_jwt(app_id: str, private_key: str) -> str:
+    payload = {
+        "iat": int(time.time()) - 60,
+        "exp": int(time.time()) + (10 * 60),
+        "iss": app_id,
+    }
+    return jwt.encode(payload, private_key, algorithm="RS256")
+```
+
+### PR Comment (Update, Don't Spam)
+```python
+# CORRECT: Find existing comment by marker, update it
+MARKER = "<!-- claw-review-bot -->"
+
+async def post_or_update_comment(repo, pr_number, body, token):
+    comments = await get_comments(repo, pr_number, token)
+    existing = next((c for c in comments if MARKER in c["body"]), None)
+    if existing:
+        await update_comment(repo, existing["id"], f"{MARKER}\n{body}", token)
+    else:
+        await create_comment(repo, pr_number, f"{MARKER}\n{body}", token)
+```
+
+## Dashboard Patterns
+
+### Static Export (GitHub Pages Friendly)
+```python
+# CORRECT: Self-contained HTML with embedded data
+def generate_static_dashboard(results: list[AnalysisResult], output: Path):
+    data_json = json.dumps([r.to_dict() for r in results])
+    html = template.render(data=data_json)
+    output.write_text(html)
+    # Result: single HTML file, zero server dependencies
+```
+
+### Client-Side Filtering (for 6000+ items)
+```javascript
+// CORRECT: Fast client-side filtering
+const filterItems = (items, filters) => {
+    return items.filter(item => {
+        if (filters.recommendation && item.recommendation !== filters.recommendation) return false;
+        if (filters.minScore && item.score < filters.minScore) return false;
+        if (filters.search && !item.title.toLowerCase().includes(filters.search)) return false;
+        return true;
+    });
+};
+// Virtual scrolling for 6000+ items if needed
+```
+
+## New CLI Commands (Sprint 3)
+
+```bash
+# List available domains
+claw-review domains
+
+# Analyze with explicit domain (github-pr is default)
+claw-review analyze --domain github-pr --repo openclaw/openclaw
+
+# Analyze cybersecurity alerts
+claw-review analyze --domain cybersecurity --source siem_alerts.json
+
+# Analyze transactions for fraud
+claw-review analyze --domain fraud-detection --source transactions.json
+
+# Generate GitHub Actions workflow
+claw-review generate-workflow --preset balanced --output .github/workflows/
+
+# Launch interactive dashboard
+claw-review dashboard --port 8080
+
+# Export static dashboard for GitHub Pages
+claw-review dashboard --static -o dashboard.html
+```
+
+## Backward Compatibility Rules
+
+Sprint 3 MUST NOT break any existing commands:
+
+```bash
+# All of these must continue to work UNCHANGED:
+claw-review analyze --repo openclaw/openclaw --preset balanced
+claw-review check
+claw-review estimate --repo openclaw/openclaw --preset fast
+claw-review presets
+claw-review status --repo openclaw/openclaw
+claw-review merge batch1.json batch2.json
+claw-review regenerate report.json
+```
+
+The existing modules (clustering.py, scoring.py, alignment.py) become thin
+wrappers that delegate to ConsensusEngine internally. External API unchanged.
+
+## IP Notice (Updated)
+
+This project demonstrates general multi-model consensus concepts using standard
+techniques (majority voting, weighted averaging, DBSCAN clustering). The platform
+adapter pattern uses standard software engineering (Protocol classes, registry).
+It does NOT implement any proprietary fusion algorithms, formal consensus proofs,
+or safety certification methods. All consensus logic should remain intentionally
+simple. For safety-critical applications requiring formal verification, see
+VectorCertain.com.

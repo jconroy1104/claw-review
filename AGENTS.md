@@ -729,3 +729,663 @@ After Sprint 2, the full 6,000+ PR OpenClaw analysis becomes viable:
 **Recommended strategy for 6K PRs:** Run `fast` first for initial clustering,
 then `thorough` only on the duplicate clusters (~200-500 PRs) for quality ranking.
 Two-pass approach: ~$12-25 total for full repo analysis.
+
+
+# Sprint 3 — Platform Architecture, GitHub Integration & Multi-Domain Adapters
+
+## Sprint 3 Mission
+
+Transform claw-review from a GitHub-specific CLI tool into a domain-agnostic
+multi-model consensus platform. Four priorities: (1) extract a pluggable core
+engine with data adapters and prompt templates, (2) build GitHub App + webhook +
+PR comment bot for real-time triage, (3) build an interactive dashboard for
+historical analysis and exploration, and (4) create domain adapter templates
+for cybersecurity and fraud detection to prove the pattern is portable.
+
+**Sprint Duration:** 72–96 hours
+**Predecessor:** Sprint 2 — 298 tests, 99% coverage, 0 failures. Async parallel
+pipeline, 3 model presets, cost tracking, batch processing with checkpoints.
+
+**Key Metrics from Sprint 2 Live Run:**
+- 100 PRs analyzed in ~7 minutes (3x faster than Sprint 1)
+- Balanced preset (Claude Sonnet + GPT-4o-mini + Gemini Flash)
+- 3 vision drift flags caught (CLOSE, DISCUSS, REVIEW)
+- 1 duplicate cluster, 2 duplicate PRs
+- 298 tests, 99% coverage, 7 CLI commands
+
+**Sprint 3 Targets:**
+- Platform core: domain-agnostic engine with adapter pattern
+- GitHub integration: webhook → analysis → PR comment (end-to-end)
+- Dashboard: interactive web UI for exploring results
+- Domain adapters: cybersecurity + fraud detection prompt templates
+- Tests: 80+ new tests, maintain 99%+ coverage, 0 failures
+- Total tests: 375+
+
+---
+
+## Team Structure
+
+| Agent | Role | Phase | Test Target |
+|-------|------|-------|-------------|
+| @core-engine | Extract domain-agnostic consensus platform with adapter interfaces | Phase 1 | 25+ |
+| @domain-adapters | Cybersecurity + fraud detection adapters, prompt templates, scoring dimensions | Phase 1 (parallel) | 20+ |
+| @github-integration | GitHub App, webhook receiver, Actions workflow, PR comment bot | Phase 2 (sequential) | 20+ |
+| @dashboard | Interactive web dashboard for exploring analysis results | Phase 2 (parallel with github-integration) | 15+ |
+
+---
+
+## Dependency Graph
+
+```
+  @core-engine          @domain-adapters
+   (Phase 1)              (Phase 1)
+        \                    /
+         \                  /
+          \                /
+       ──→ BOTH COMPLETE ←──
+              |         |
+              ▼         ▼
+   @github-integration  @dashboard
+      (Phase 2)        (Phase 2)
+```
+
+**Phase 1 (parallel):** @core-engine extracts the platform interfaces while
+@domain-adapters builds prompt templates for new domains. They coordinate
+on the adapter interface but own separate files.
+
+**Phase 2 (parallel):** @github-integration and @dashboard both build on the
+core platform but are independent of each other. They can run simultaneously.
+
+---
+
+## Shared Interfaces (Defined by Lead)
+
+Before spawning teammates, Lead creates these platform abstractions:
+
+### DataAdapter (Protocol)
+```python
+from typing import Protocol, Any
+
+class DataItem:
+    """A single item to analyze (PR, alert, transaction, etc.)."""
+    id: str
+    title: str
+    body: str
+    metadata: dict[str, Any]
+    raw: dict[str, Any]
+
+class DataAdapter(Protocol):
+    """Interface for domain-specific data sources."""
+    domain: str  # "github-pr", "cybersecurity", "fraud", etc.
+
+    async def fetch_items(
+        self, source: str, max_items: int, **kwargs
+    ) -> list[DataItem]:
+        """Fetch items from the data source."""
+        ...
+
+    async def fetch_context_docs(
+        self, source: str, **kwargs
+    ) -> dict[str, str]:
+        """Fetch reference documents for alignment scoring."""
+        ...
+
+    def format_item_for_prompt(self, item: DataItem) -> str:
+        """Format a single item for inclusion in an LLM prompt."""
+        ...
+```
+
+### DomainConfig (dataclass)
+```python
+@dataclass
+class DomainConfig:
+    """Domain-specific configuration for the consensus engine."""
+    domain: str
+    scoring_dimensions: list[str]  # e.g., ["code_quality", "test_coverage", ...]
+    clustering_prompt: str         # System prompt for intent extraction
+    scoring_prompt: str            # System prompt for quality scoring
+    alignment_prompt: str          # System prompt for vision/policy alignment
+    recommendation_levels: list[str]  # e.g., ["MERGE", "REVIEW", "DISCUSS", "CLOSE"]
+    default_thresholds: dict[str, float]
+```
+
+### AnalysisResult (dataclass)
+```python
+@dataclass
+class AnalysisResult:
+    """Domain-agnostic analysis output."""
+    domain: str
+    source: str
+    items_analyzed: int
+    clusters: list[Cluster]
+    quality_scores: list[QualityScore]
+    alignment_scores: list[AlignmentScore]
+    cost: CostSummary
+    timestamp: str
+    metadata: dict[str, Any]
+```
+
+---
+
+## @core-engine
+
+**Description:** Refactor the existing claw-review pipeline into a domain-agnostic
+consensus platform. Extract GitHub-specific logic into an adapter, define clean
+interfaces for data sources and domain configs, and make the pipeline work with
+any domain adapter.
+
+### File Ownership
+
+```
+src/claw_review/
+├── platform/                      ← @core-engine (NEW directory)
+│   ├── __init__.py
+│   ├── interfaces.py              ← DataAdapter, DomainConfig, DataItem, AnalysisResult
+│   ├── engine.py                  ← ConsensusEngine: domain-agnostic pipeline orchestrator
+│   └── registry.py                ← AdapterRegistry: register/discover domain adapters
+├── adapters/                      ← @core-engine (NEW directory, GitHub adapter)
+│   ├── __init__.py
+│   └── github_pr.py               ← GitHubPRAdapter (refactored from github_client.py)
+├── domains/                       ← @core-engine (NEW directory)
+│   ├── __init__.py
+│   └── github_pr.py               ← GITHUB_PR_CONFIG: prompts, dimensions, thresholds
+tests/
+├── test_platform/                 ← @core-engine (NEW directory)
+│   ├── __init__.py
+│   ├── test_interfaces.py
+│   ├── test_engine.py
+│   └── test_registry.py
+├── test_adapters/
+│   ├── __init__.py
+│   └── test_github_pr_adapter.py
+```
+
+### Responsibilities
+
+1. **platform/interfaces.py** — Core abstractions
+   - `DataItem` dataclass: universal item container
+   - `DataAdapter` Protocol: fetch_items, fetch_context_docs, format_item_for_prompt
+   - `DomainConfig` dataclass: scoring dimensions, prompts, thresholds, recommendations
+   - `AnalysisResult` dataclass: domain-agnostic output container
+   - `CostSummary` dataclass: token usage and cost breakdown
+
+2. **platform/engine.py** — ConsensusEngine
+   - `ConsensusEngine(model_pool, domain_config)` — generic pipeline
+   - `async analyze(items: list[DataItem], context_docs: dict) → AnalysisResult`
+   - Internally calls: extract_intents → cluster → score → align
+   - Uses domain_config.clustering_prompt, scoring_prompt, alignment_prompt
+   - Uses domain_config.scoring_dimensions for quality evaluation
+   - Uses domain_config.recommendation_levels for alignment output
+   - Pluggable: swap domain_config to change what's analyzed and how
+
+3. **platform/registry.py** — Adapter discovery
+   - `AdapterRegistry.register(domain, adapter_class, config)`
+   - `AdapterRegistry.get(domain) → (adapter, config)`
+   - `AdapterRegistry.list_domains() → list[str]`
+   - Auto-discovery: scan adapters/ and domains/ directories
+   - CLI: `claw-review domains` lists available domains
+
+4. **adapters/github_pr.py** — Refactored GitHub adapter
+   - Implements `DataAdapter` Protocol
+   - Wraps existing github_client.py functionality
+   - `PRData` maps to `DataItem` via conversion method
+   - Preserves all existing caching, pagination, rate limiting
+
+5. **domains/github_pr.py** — GitHub PR domain config
+   - Extracts existing prompts from clustering.py, scoring.py, alignment.py
+   - Defines 5 scoring dimensions (code_quality, test_coverage, etc.)
+   - Defines recommendation levels (MERGE, REVIEW, DISCUSS, CLOSE)
+   - Defines default thresholds (similarity: 0.82, disagreement: 3.0, etc.)
+
+### Key Design Decisions
+
+- Existing modules (clustering.py, scoring.py, alignment.py) are NOT deleted
+- They become thin wrappers around ConsensusEngine for backward compatibility
+- CLI `claw-review analyze` continues to work exactly as before
+- New flag: `claw-review analyze --domain github-pr` (default)
+- Platform enables: `claw-review analyze --domain cybersecurity --source siem.json`
+
+### Test Requirements (25+ tests)
+
+- DataItem: creation, serialization, metadata handling
+- DataAdapter Protocol: mock adapter satisfies interface
+- DomainConfig: load, validate, missing fields
+- ConsensusEngine: full pipeline with mock adapter and mock models
+- ConsensusEngine: different domain configs produce different prompts
+- Registry: register, get, list, duplicate domain handling
+- GitHub adapter: implements DataAdapter correctly
+- Backward compatibility: existing CLI commands still work
+- Domain config extraction: GitHub prompts match originals
+
+### Quality Gates
+
+- [ ] All existing tests still pass (zero regression)
+- [ ] ConsensusEngine works with any DataAdapter implementation
+- [ ] Domain config fully parameterizes all prompts and dimensions
+- [ ] Registry pattern allows runtime adapter registration
+- [ ] `claw-review analyze` backward compatible (no flags needed)
+- [ ] Platform interfaces have complete docstrings with examples
+
+---
+
+## @domain-adapters
+
+**Description:** Create domain adapter templates and configs for cybersecurity
+(SIEM alert triage) and fraud detection (transaction analysis). These prove the
+platform pattern is portable beyond GitHub PRs and provide the prompt engineering
+foundation for future VectorCertain integrations.
+
+### File Ownership
+
+```
+src/claw_review/
+├── adapters/
+│   ├── cybersecurity.py           ← @domain-adapters (NEW)
+│   └── fraud_detection.py         ← @domain-adapters (NEW)
+├── domains/
+│   ├── cybersecurity.py           ← @domain-adapters (NEW)
+│   └── fraud_detection.py         ← @domain-adapters (NEW)
+tests/
+├── test_adapters/
+│   ├── test_cybersecurity_adapter.py  ← @domain-adapters (NEW)
+│   └── test_fraud_adapter.py          ← @domain-adapters (NEW)
+├── test_domains/
+│   ├── __init__.py
+│   ├── test_cybersecurity_config.py   ← @domain-adapters (NEW)
+│   └── test_fraud_config.py           ← @domain-adapters (NEW)
+├── fixtures/
+│   ├── sample_siem_alerts.json        ← @domain-adapters (NEW)
+│   └── sample_transactions.json       ← @domain-adapters (NEW)
+```
+
+### Responsibilities
+
+1. **adapters/cybersecurity.py** — SIEM alert adapter
+   - Implements `DataAdapter` Protocol
+   - `fetch_items()`: reads from JSON file or stdin (real SIEM integration deferred)
+   - Input format: standard SIEM alert JSON (severity, source_ip, dest_ip,
+     alert_type, timestamp, raw_log, indicator_of_compromise)
+   - `format_item_for_prompt()`: structured alert summary for LLM analysis
+   - Support for common formats: Splunk JSON, ElasticSearch alerts, generic CEF
+
+2. **domains/cybersecurity.py** — CYBERSECURITY_CONFIG
+   - Scoring dimensions: `threat_severity`, `confidence`, `attack_sophistication`,
+     `asset_criticality`, `actionability`
+   - Clustering prompt: "Group these alerts by attack campaign or common
+     threat actor / technique. Identify correlated alerts that are part of
+     the same incident."
+   - Scoring prompt: "Evaluate this security alert across 5 dimensions..."
+   - Alignment prompt: "Does this alert match known threat patterns in the
+     organization's threat model? Score alignment with security policy."
+   - Recommendation levels: `BLOCK`, `INVESTIGATE`, `MONITOR`, `DISMISS`
+   - Default thresholds: similarity 0.78, disagreement 2.5, dismiss below 3.0
+
+3. **adapters/fraud_detection.py** — Transaction adapter
+   - Implements `DataAdapter` Protocol
+   - `fetch_items()`: reads from JSON/CSV file (real bank API deferred)
+   - Input format: transaction JSON (amount, merchant, location, timestamp,
+     card_type, transaction_type, customer_id, historical_avg)
+   - `format_item_for_prompt()`: structured transaction summary with context
+   - Support for: JSON, CSV with configurable column mapping
+
+4. **domains/fraud_detection.py** — FRAUD_DETECTION_CONFIG
+   - Scoring dimensions: `anomaly_score`, `pattern_match`, `velocity_risk`,
+     `geographic_risk`, `amount_deviation`
+   - Clustering prompt: "Group these transactions by suspected fraud pattern.
+     Identify coordinated fraud rings or repeated attack vectors."
+   - Scoring prompt: "Evaluate this transaction for fraud risk across 5 dimensions..."
+   - Alignment prompt: "Does this transaction match the customer's established
+     behavioral profile? Score deviation from normal patterns."
+   - Recommendation levels: `APPROVE`, `FLAG`, `HOLD`, `BLOCK`
+   - Default thresholds: similarity 0.75, disagreement 2.0, block below 3.0
+
+5. **Fixture files** — Realistic sample data
+   - `sample_siem_alerts.json`: 20 alerts including correlated attack chain,
+     false positives, and genuine threats
+   - `sample_transactions.json`: 20 transactions including normal purchases,
+     velocity anomalies, geographic impossibility, and micro-fraud patterns
+
+### Test Requirements (20+ tests)
+
+- Cybersecurity adapter: load alerts, format for prompt, handle missing fields
+- Cybersecurity config: all prompts present, dimensions validated
+- Fraud adapter: load transactions (JSON + CSV), format, column mapping
+- Fraud config: all prompts present, dimensions validated
+- Both adapters: satisfy DataAdapter Protocol
+- Both configs: register correctly with AdapterRegistry
+- Fixture data: valid JSON, covers edge cases
+- Cross-domain: ConsensusEngine works with both configs (mocked models)
+- CLI: `claw-review domains` lists all 3 domains (github-pr, cybersecurity, fraud)
+- CLI: `claw-review analyze --domain cybersecurity --source alerts.json` parses correctly
+
+### Quality Gates
+
+- [ ] Both adapters fully implement DataAdapter Protocol
+- [ ] Domain configs include realistic, well-crafted prompts
+- [ ] Fixture data is realistic and covers genuine analysis scenarios
+- [ ] All tests mocked (zero real API calls, zero real SIEM/bank connections)
+- [ ] ConsensusEngine produces valid AnalysisResult with both new domains
+- [ ] Prompts are structured to produce consistent JSON output from models
+- [ ] README section documents each domain with example usage
+
+---
+
+## @github-integration
+
+**Description:** Build the GitHub App infrastructure for real-time PR triage:
+webhook receiver to detect new/updated PRs, automated analysis trigger, and
+PR comment bot that posts consensus results directly on the PR.
+
+### File Ownership
+
+```
+src/claw_review/
+├── github/                        ← @github-integration (NEW directory)
+│   ├── __init__.py
+│   ├── app.py                     ← GitHub App configuration and auth
+│   ├── webhook.py                 ← Webhook receiver (FastAPI/Flask endpoint)
+│   ├── commenter.py               ← PR comment formatter and poster
+│   └── actions.py                 ← GitHub Actions workflow generator
+├── templates/
+│   ├── pr_comment.md.j2           ← @github-integration (NEW)
+│   └── actions_workflow.yml.j2    ← @github-integration (NEW)
+tests/
+├── test_github/                   ← @github-integration (NEW directory)
+│   ├── __init__.py
+│   ├── test_app.py
+│   ├── test_webhook.py
+│   ├── test_commenter.py
+│   └── test_actions.py
+```
+
+### Responsibilities
+
+1. **github/app.py** — GitHub App configuration
+   - App ID, private key, installation token management
+   - JWT generation for GitHub App authentication
+   - Installation token caching (expires after 1 hour)
+   - Permissions: pull_requests (read/write), issues (write for comments)
+   - Config via environment: GITHUB_APP_ID, GITHUB_PRIVATE_KEY_PATH
+
+2. **github/webhook.py** — Webhook receiver
+   - Lightweight HTTP endpoint (FastAPI or Flask, agent decides)
+   - Listens for: `pull_request.opened`, `pull_request.synchronize`,
+     `pull_request.reopened` events
+   - Webhook signature verification (HMAC-SHA256)
+   - Event parsing: extract repo, PR number, action type
+   - Queue analysis job (async, non-blocking response to GitHub)
+   - Configurable: which repos, which PR events, minimum PR size
+
+3. **github/commenter.py** — PR comment bot
+   - Format analysis results as a Markdown PR comment
+   - Sections: Quality Score (with bar chart), Duplicate Detection,
+     Vision Alignment, Model Consensus, Recommendation
+   - Update existing comment (don't spam — find and edit previous comment)
+   - Collapsible details section for per-model scores
+   - Badge/label: "claw-review: MERGE ✅" or "claw-review: REVIEW ⚠️"
+   - Optional: add GitHub labels based on recommendation
+
+4. **github/actions.py** — GitHub Actions workflow generator
+   - `claw-review generate-workflow` CLI command
+   - Generates `.github/workflows/claw-review.yml`
+   - Triggers on: pull_request opened/synchronize
+   - Runs claw-review against the single PR
+   - Posts comment with results
+   - Configurable: preset, budget limit, skip-alignment flag
+
+5. **templates/pr_comment.md.j2** — Comment template
+   ```markdown
+   ## 🦞 ClawReview Analysis
+
+   | Dimension | Score |
+   |-----------|-------|
+   | Code Quality | {{ scores.code_quality }}/10 |
+   | ... | ... |
+
+   **Overall: {{ overall_score }}/10** · Recommendation: {{ recommendation }}
+
+   <details>
+   <summary>Per-model breakdown</summary>
+   ...
+   </details>
+
+   {% if duplicates %}
+   ⚠️ **Potential duplicates found:** {{ duplicate_prs }}
+   {% endif %}
+
+   ---
+   *Analyzed by [claw-review](https://github.com/jconroy1104/claw-review)
+   using multi-model consensus ({{ models }})*
+   ```
+
+6. **templates/actions_workflow.yml.j2** — Actions workflow template
+   ```yaml
+   name: ClawReview PR Triage
+   on:
+     pull_request:
+       types: [opened, synchronize, reopened]
+   jobs:
+     triage:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v4
+         - uses: actions/setup-python@v5
+         - run: pip install claw-review
+         - run: claw-review analyze-pr ${{ github.event.pull_request.number }}
+           env:
+             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+             OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+   ```
+
+### Test Requirements (20+ tests)
+
+- App auth: JWT generation, installation token caching, token expiry
+- Webhook: signature verification (valid, invalid, missing)
+- Webhook: event parsing (opened, synchronize, reopened, ignored events)
+- Webhook: repo filtering (allowed repos, blocked repos)
+- Commenter: format quality scores, duplicate detection, alignment flags
+- Commenter: update existing comment (find by marker text)
+- Commenter: handle empty results, single PR, flagged PR
+- Actions: workflow generation, correct triggers, env vars
+- Actions: CLI command outputs valid YAML
+- Integration: webhook → analysis → comment (mocked GitHub API)
+
+### Quality Gates
+
+- [ ] Webhook signature verification prevents unauthorized triggers
+- [ ] Comment bot updates (not duplicates) existing comments
+- [ ] Actions workflow is valid YAML that GitHub accepts
+- [ ] All GitHub API calls mocked in tests
+- [ ] Non-blocking webhook response (analysis runs async)
+- [ ] Comment template renders correctly with all edge cases
+- [ ] `generate-workflow` command produces copy-paste ready YAML
+
+---
+
+## @dashboard
+
+**Description:** Build an interactive web dashboard for exploring claw-review
+analysis results. Supports filtering, sorting, searching across all analyzed
+items. Works with any domain's AnalysisResult output.
+
+### File Ownership
+
+```
+src/claw_review/
+├── dashboard/                     ← @dashboard (NEW directory)
+│   ├── __init__.py
+│   ├── app.py                     ← Dashboard web app (agent chooses framework)
+│   ├── data_loader.py             ← Load AnalysisResult JSON into dashboard
+│   └── static/                    ← CSS, JS assets (if static HTML approach)
+│       └── ...
+├── templates/
+│   └── dashboard.html.j2          ← @dashboard (or .jsx if React)
+tests/
+├── test_dashboard/                ← @dashboard (NEW directory)
+│   ├── __init__.py
+│   ├── test_app.py
+│   ├── test_data_loader.py
+│   └── test_rendering.py
+```
+
+### Responsibilities
+
+1. **dashboard/data_loader.py** — Load and transform data
+   - Load from claw-review JSON report files
+   - Support multiple report files (merged view)
+   - Transform AnalysisResult into dashboard-friendly format
+   - Compute summary statistics: total items, clusters, flags, cost
+   - Filter/sort API: by score, by cluster, by recommendation, by date
+
+2. **dashboard/app.py** — Web application
+   - Agent decides: static HTML generator OR lightweight server (Flask/FastAPI)
+   - `claw-review dashboard --port 8080` for local server mode
+   - `claw-review dashboard --static -o dashboard.html` for static export
+   - Static export for GitHub Pages deployment (no server required)
+
+3. **Dashboard features (UI)**
+   - **Summary cards:** items analyzed, clusters, drift flags, total cost, runtime
+   - **Cluster view:** expandable clusters with ranked items, quality bars
+   - **Table view:** all items sortable by score, recommendation, author, date
+   - **Search:** filter by title, author, label, recommendation
+   - **Detail panel:** click any item to see per-model scores, consensus detail
+   - **Cost breakdown:** per-model cost chart (mirrors OpenRouter dashboard)
+   - **Domain selector:** switch between github-pr, cybersecurity, fraud views
+   - **Dark theme:** GitHub-style dark theme (matches Sprint 1/2 reports)
+   - **Responsive:** works on desktop and mobile
+
+4. **Static export for GitHub Pages**
+   - `claw-review dashboard --static` generates self-contained HTML
+   - All data embedded as JSON in a `<script>` tag
+   - JavaScript handles filtering/sorting client-side
+   - Zero server dependencies for viewing
+   - Publishable directly to GitHub Pages
+
+### Test Requirements (15+ tests)
+
+- Data loader: load single report, multiple reports, empty report
+- Data loader: filter by recommendation, by score range, by author
+- Data loader: sort by quality ascending/descending
+- Summary stats: correct counts, averages, totals
+- Static export: valid HTML output, embedded data, JavaScript works
+- Dashboard CLI: --port flag, --static flag, --output flag
+- Multi-domain: loads github-pr and cybersecurity results in same dashboard
+- Search: title match, author match, partial match
+- Edge cases: zero items, single item, 1000+ items
+
+### Quality Gates
+
+- [ ] Static export is a single self-contained HTML file
+- [ ] Dashboard works with any domain's AnalysisResult
+- [ ] Client-side filtering is fast (<100ms for 6000 items)
+- [ ] Dark theme matches existing report styling
+- [ ] GitHub Pages deployable with zero configuration
+- [ ] Mobile responsive (readable on phone)
+- [ ] Data loader handles malformed/partial JSON gracefully
+
+---
+
+## Lead Responsibilities
+
+### Pre-Sprint
+
+1. Create platform/interfaces.py with shared Protocol and dataclass definitions
+2. Update pyproject.toml: add FastAPI/Flask, PyJWT, cryptography dependencies
+3. Update CLAUDE.md with Sprint 3 platform architecture context
+4. Define DataAdapter Protocol and DomainConfig dataclass before spawning
+
+### Phase Gate (Phase 1 → Phase 2)
+
+1. Verify @core-engine's ConsensusEngine works with mock adapters
+2. Verify @domain-adapters' configs register correctly with registry
+3. Confirm platform interfaces are stable before Phase 2 agents build on them
+
+### Post-Sprint
+
+1. Integration tests: webhook → engine → commenter (end-to-end mock)
+2. Integration tests: dashboard loads real Sprint 2 report data
+3. Cross-domain test: same engine, different adapters, valid results
+4. Update README: platform architecture diagram, new domains, GitHub App setup
+5. Update GitHub Pages with new dashboard
+6. Live validation: run dashboard against Sprint 2 report data
+
+---
+
+## Conflict Prevention Rules
+
+1. **File lock:** Each agent owns specific directories (platform/, adapters/,
+   domains/, github/, dashboard/). No agent touches another's directory.
+2. **Interface-first:** Lead defines DataAdapter, DomainConfig, AnalysisResult
+   BEFORE spawning. These interfaces are frozen during the sprint.
+3. **Import boundaries:**
+   - @core-engine exports: ConsensusEngine, DataAdapter, DomainConfig, DataItem,
+     AnalysisResult, AdapterRegistry
+   - @domain-adapters exports: CybersecurityAdapter, CYBERSECURITY_CONFIG,
+     FraudDetectionAdapter, FRAUD_DETECTION_CONFIG
+   - @github-integration exports: GitHubApp, WebhookReceiver, PRCommenter,
+     generate_workflow
+   - @dashboard exports: DashboardApp, DataLoader, generate_static_dashboard
+4. **Backward compatibility:** Existing CLI commands (analyze, check, estimate,
+   presets, status, merge, regenerate) MUST continue to work unchanged.
+5. **Test isolation:** Each agent's tests pass independently using mocks.
+
+---
+
+## Global Quality Gates
+
+Before sprint completion:
+
+- [ ] All tests pass: `pytest tests/ -x -q` → 0 failures
+- [ ] Total test count: 375+ (298 existing + 80 new)
+- [ ] Coverage: maintain 99%+
+- [ ] Type checking: `mypy src/claw_review/ --ignore-missing-imports` → 0 errors
+- [ ] Linting: `ruff check src/ tests/` → 0 violations
+- [ ] Backward compatibility: all Sprint 2 CLI commands still work
+- [ ] Platform works with 3 domains: github-pr, cybersecurity, fraud-detection
+- [ ] Dashboard renders Sprint 2 report data correctly
+- [ ] GitHub Actions workflow is valid YAML
+
+---
+
+## Expected Outcome
+
+After Sprint 3, claw-review becomes a multi-domain platform:
+
+```
+                    ┌──────────────────────────────────────┐
+                    │       claw-review Platform           │
+                    │                                      │
+                    │   ConsensusEngine (domain-agnostic)  │
+                    │   ModelPool (OpenRouter, async)       │
+                    │   CostTracker / BatchProcessor       │
+                    └──────────┬───────────────────────────┘
+                               │
+              ┌────────────────┼────────────────┐
+              ▼                ▼                ▼
+        ┌──────────┐    ┌──────────┐    ┌──────────┐
+        │ GitHub   │    │  Cyber   │    │  Fraud   │
+        │ PR       │    │ Security │    │Detection │
+        │ Adapter  │    │ Adapter  │    │ Adapter  │
+        └────┬─────┘    └──────────┘    └──────────┘
+             │
+    ┌────────┼────────┐
+    ▼        ▼        ▼
+  Webhook  Actions  Dashboard
+  Bot      CI/CD    Explorer
+```
+
+| Capability | Status |
+|------------|--------|
+| CLI analysis (any domain) | ✅ |
+| GitHub PR comments | ✅ |
+| GitHub Actions workflow | ✅ |
+| Interactive dashboard | ✅ |
+| Cybersecurity templates | ✅ Ready for real SIEM integration |
+| Fraud detection templates | ✅ Ready for real transaction feeds |
+| Real-time webhooks | ✅ |
+| Static GitHub Pages export | ✅ |
+
+**Next sprint candidates after Sprint 3:**
+- Sprint 4: OpenClaw Skill plugin (package as installable OpenClaw skill)
+- Sprint 5: Live SIEM integration (Splunk/Elastic adapter with real data)
+- Sprint 6: Production hardening (Redis queues, PostgreSQL state, Docker deployment)

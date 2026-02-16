@@ -131,8 +131,8 @@
 <body>
     <h1>🦞 ClawReview Report</h1>
     <div class="meta">
-        <strong>openclaw/openclaw</strong> · 100 open PRs analyzed · 2026-02-16 04:09 UTC
-        <br>Models: anthropic/claude-sonnet-4, openai/gpt-4o, google/gemini-2.0-flash-001
+        <strong>openclaw/openclaw</strong> · 100 open PRs analyzed · 2026-02-16 06:23 UTC
+        <br>Models: anthropic/claude-sonnet-4, openai/gpt-4o-mini, google/gemini-2.0-flash-001
     </div>
 
     <div class="stats">
@@ -141,15 +141,15 @@
             <div class="label">PRs Analyzed</div>
         </div>
         <div class="stat-card">
-            <div class="number">3</div>
+            <div class="number">1</div>
             <div class="label">Duplicate Clusters</div>
         </div>
         <div class="stat-card">
-            <div class="number">7</div>
+            <div class="number">2</div>
             <div class="label">Duplicate PRs</div>
         </div>
         <div class="stat-card">
-            <div class="number">0</div>
+            <div class="number">3</div>
             <div class="label">Vision Drift Flags</div>
         </div>
     </div>
@@ -162,102 +162,11 @@
     <div class="cluster duplicate">
         <div class="cluster-header">
             <div>
-                <h3>Fixes a bug where HEARTBEAT_OK tokens were not being completely stripped from messages in heartbeat mode, leading to unintended delivery of these tokens in Telegram DMs.</h3>
-                <span class="badge badge-dup">3 duplicates</span>
-                <span class="badge badge-category">bugfix</span>
-                <span style="color: var(--text-muted); font-size: 0.8rem; margin-left: 0.5rem;">
-                    area: auto-reply/heartbeat · confidence: 81.0%
-                </span>
-            </div>
-        </div>
-        <div>
-            <div class="pr-row" style="font-weight: 600; color: var(--text-muted); font-size: 0.8rem;">
-                <div>Rank</div>
-                <div>Pull Request</div>
-                <div>Quality</div>
-                <div>Review</div>
-            </div>
-            
-            <div class="pr-row">
-                <div class="pr-rank best">
-                    ⭐#1
-                </div>
-                <div>
-                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/16321" target="_blank">#16321</a>
-                    Fix #12767: suppress HEARTBEAT_OK leakage in Telegram DM replies
-                    <div class="pr-author">@tdjackey</div>
-                </div>
-                <div>
-                    <div style="font-size: 0.85rem; margin-bottom: 2px;">8.9/10</div>
-                    <div class="score-bar">
-                        <div class="score-fill high"
-                             style="width: 89.3%"></div>
-                    </div>
-                </div>
-                <div>
-                    
-                    <span style="color: var(--green); font-size: 0.8rem;">✓ Consensus</span>
-                    
-                </div>
-            </div>
-            
-            <div class="pr-row">
-                <div class="pr-rank ">
-                    #2
-                </div>
-                <div>
-                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17371" target="_blank">#17371</a>
-                    fix(heartbeat): always strip HEARTBEAT_OK token from reply text
-                    <div class="pr-author">@BinHPdev</div>
-                </div>
-                <div>
-                    <div style="font-size: 0.85rem; margin-bottom: 2px;">8.7/10</div>
-                    <div class="score-bar">
-                        <div class="score-fill high"
-                             style="width: 86.7%"></div>
-                    </div>
-                </div>
-                <div>
-                    
-                    <span class="human-review-flag">⚠ Human Review</span>
-                    
-                </div>
-            </div>
-            
-            <div class="pr-row">
-                <div class="pr-rank ">
-                    #3
-                </div>
-                <div>
-                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17717" target="_blank">#17717</a>
-                    fix: strip HEARTBEAT_OK tokens anywhere in heartbeat mode
-                    <div class="pr-author">@Marvae</div>
-                </div>
-                <div>
-                    <div style="font-size: 0.85rem; margin-bottom: 2px;">8.7/10</div>
-                    <div class="score-bar">
-                        <div class="score-fill high"
-                             style="width: 86.6%"></div>
-                    </div>
-                </div>
-                <div>
-                    
-                    <span style="color: var(--green); font-size: 0.8rem;">✓ Consensus</span>
-                    
-                </div>
-            </div>
-            
-        </div>
-    </div>
-    
-    <div class="cluster duplicate">
-        <div class="cluster-header">
-            <div>
-                <h3>Fixes a bug where auth profiles were incorrectly rotated due to timeouts occurring during active tool use, leading to unnecessary cooldowns and potential crash loops in single-account setups.</h3>
+                <h3>Adds a runtime staleness check to the cron job scheduler to prevent jobs from being permanently blocked due to a stale `runningAtMs` timestamp, ensuring that jobs can recover from transient failures or race conditions that prevent the timestamp from being cleared after completion.</h3>
                 <span class="badge badge-dup">2 duplicates</span>
                 <span class="badge badge-category">bugfix</span>
                 <span style="color: var(--text-muted); font-size: 0.8rem; margin-left: 0.5rem;">
-                    area: agents · confidence: 87.0%
+                    area: cron · confidence: 89.0%
                 </span>
             </div>
         </div>
@@ -274,9 +183,9 @@
                     ⭐#1
                 </div>
                 <div>
-                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17559" target="_blank">#17559</a>
-                    fix: don't rotate auth profile on timeout during active tool use
-                    <div class="pr-author">@jg-noncelogic</div>
+                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17561" target="_blank">#17561</a>
+                    fix(cron): add runtime staleness guard for runningAtMs (#17554)
+                    <div class="pr-author">@robbyczgw-cla</div>
                 </div>
                 <div>
                     <div style="font-size: 0.85rem; margin-bottom: 2px;">8.1/10</div>
@@ -297,88 +206,20 @@
                     #2
                 </div>
                 <div>
-                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/16554" target="_blank">#16554</a>
-                    fix(agent): prevent session deadlock on timeout during tool execution
-                    <div class="pr-author">@mverrilli</div>
+                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17664" target="_blank">#17664</a>
+                    fix(cron): detect and clear stale runningAtMs marker in manual run (#17554)
+                    <div class="pr-author">@echoVic</div>
                 </div>
                 <div>
-                    <div style="font-size: 0.85rem; margin-bottom: 2px;">7.7/10</div>
+                    <div style="font-size: 0.85rem; margin-bottom: 2px;">7.9/10</div>
                     <div class="score-bar">
                         <div class="score-fill high"
-                             style="width: 76.7%"></div>
+                             style="width: 79.3%"></div>
                     </div>
                 </div>
                 <div>
                     
                     <span class="human-review-flag">⚠ Human Review</span>
-                    
-                </div>
-            </div>
-            
-        </div>
-    </div>
-    
-    <div class="cluster duplicate">
-        <div class="cluster-header">
-            <div>
-                <h3>Adds support for the Gemini embedding model and a configurable base URL for OpenAI-compatible APIs to the memory-lancedb plugin, and fixes a TUI crash related to terminal width overflow.</h3>
-                <span class="badge badge-dup">2 duplicates</span>
-                <span class="badge badge-category">feature</span>
-                <span style="color: var(--text-muted); font-size: 0.8rem; margin-left: 0.5rem;">
-                    area: memory-lancedb · confidence: 84.0%
-                </span>
-            </div>
-        </div>
-        <div>
-            <div class="pr-row" style="font-weight: 600; color: var(--text-muted); font-size: 0.8rem;">
-                <div>Rank</div>
-                <div>Pull Request</div>
-                <div>Quality</div>
-                <div>Review</div>
-            </div>
-            
-            <div class="pr-row">
-                <div class="pr-rank best">
-                    ⭐#1
-                </div>
-                <div>
-                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17701" target="_blank">#17701</a>
-                    fix(memory-lancedb): add gemini-embedding-001 and baseUrl support
-                    <div class="pr-author">@Phineas1500</div>
-                </div>
-                <div>
-                    <div style="font-size: 0.85rem; margin-bottom: 2px;">8.6/10</div>
-                    <div class="score-bar">
-                        <div class="score-fill high"
-                             style="width: 86.0%"></div>
-                    </div>
-                </div>
-                <div>
-                    
-                    <span style="color: var(--green); font-size: 0.8rem;">✓ Consensus</span>
-                    
-                </div>
-            </div>
-            
-            <div class="pr-row">
-                <div class="pr-rank ">
-                    #2
-                </div>
-                <div>
-                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17696" target="_blank">#17696</a>
-                    fix(memory-lancedb): add gemini-embedding-001 and baseUrl support
-                    <div class="pr-author">@aldoeliacim</div>
-                </div>
-                <div>
-                    <div style="font-size: 0.85rem; margin-bottom: 2px;">8.2/10</div>
-                    <div class="score-bar">
-                        <div class="score-fill high"
-                             style="width: 82.0%"></div>
-                    </div>
-                </div>
-                <div>
-                    
-                    <span style="color: var(--green); font-size: 0.8rem;">✓ Consensus</span>
                     
                 </div>
             </div>
@@ -394,9 +235,103 @@
     <p class="section-desc">How well each PR aligns with the project's stated architecture and goals. Low scores indicate potential drift.</p>
 
     
-
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17764" target="_blank">#17764</a>
+                <strong>fix: CLI update module loading - syntax fixes (v2)</strong>
+                <span class="pr-author">@Limitless2023</span>
+            </div>
+            <div>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.7/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Introduces duplicate imports that will cause TypeScript compilation to fail</li>
+            
+            <li>Uses incorrect function signature for runCommandWithTimeout (object vs string array)</li>
+            
+            <li>Creates runtime crashes due to wrong calling convention</li>
+            
+            <li>Does not follow the project's emphasis on stability and testing - the fix introduces new blocking errors</li>
+            
+            <li>Violates the 'keep PRs focused' guideline by attempting multiple fixes that create new problems</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This PR introduces compilation-blocking duplicate imports and runtime-crashing function calls, directly conflicting with the project's current focus on stability and the requirement that contributions be properly tested.</div>
+        
+    </div>
     
-    <p style="color: var(--text-muted); padding: 1rem;">All analyzed PRs show acceptable alignment with project vision.</p>
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17778" target="_blank">#17778</a>
+                <strong>Create gateway-connection.png</strong>
+                <span class="pr-author">@smffff</span>
+            </div>
+            <div>
+                <span class="badge badge-discuss">DISCUSS</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.0/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>PR lacks any description or context despite template requirements</li>
+            
+            <li>No indication of what the image contains or its purpose</li>
+            
+            <li>Violates contributing guidelines requiring description of problem and fix</li>
+            
+            <li>Missing all required PR template sections including security impact assessment</li>
+            
+            <li>No verification or testing information provided</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This PR completely ignores the detailed contribution guidelines and PR template requirements, providing no context for what appears to be a simple image addition.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17777" target="_blank">#17777</a>
+                <strong>fix(tui): prevent URL breaking during line wrap</strong>
+                <span class="pr-author">@proto-genesys-x</span>
+            </div>
+            <div>
+                <span class="badge badge-review">REVIEW</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.7/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Technical approach is fundamentally flawed - ZWNJ characters don't prevent line breaks and will corrupt URLs when copied</li>
+            
+            <li>Solution makes URLs less functional rather than more functional, contradicting the stated goal</li>
+            
+            <li>Includes accidental debug log file (openclaw-2026-02-16.log) suggesting incomplete cleanup</li>
+            
+            <li>Implements a Unicode-based solution that doesn't align with terminal rendering realities</li>
+            
+            <li>The proposed solution using zero-width non-joiner characters may introduce new issues with URL functionality, potentially conflicting with the project's goal of maintaining a reliable user experience.</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">While this addresses a legitimate TUI bug and follows testing practices, the technical solution is fundamentally broken and will make URLs worse rather than better.</div>
+        
+    </div>
+    
+
     
 
     <!-- TOP QUALITY -->
@@ -407,105 +342,35 @@
     <div class="alignment-card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/16321" target="_blank">#16321</a>
-                <strong>Fix #12767: suppress HEARTBEAT_OK leakage in Telegram DM replies</strong>
-                <span class="pr-author">@tdjackey</span>
-            </div>
-            <div>
-                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">8.9/10</span>
-            </div>
-        </div>
-        <div class="consensus-detail">Well-focused bug fix with comprehensive test coverage and clean implementation that properly handles heartbeat token suppression without breaking existing functionality.</div>
-    </div>
-    
-    <div class="alignment-card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17371" target="_blank">#17371</a>
-                <strong>fix(heartbeat): always strip HEARTBEAT_OK token from reply text</strong>
-                <span class="pr-author">@BinHPdev</span>
-            </div>
-            <div>
-                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">8.7/10</span>
-            </div>
-        </div>
-        <div class="consensus-detail">Clean, focused bug fix that correctly removes a paradoxical condition, but lacks specific tests for the fixed scenario.</div>
-    </div>
-    
-    <div class="alignment-card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17717" target="_blank">#17717</a>
-                <strong>fix: strip HEARTBEAT_OK tokens anywhere in heartbeat mode</strong>
-                <span class="pr-author">@Marvae</span>
-            </div>
-            <div>
-                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">8.7/10</span>
-            </div>
-        </div>
-        <div class="consensus-detail">Well-focused bug fix with comprehensive test coverage and clear problem analysis, though includes some unrelated formatting changes that slightly reduce style consistency.</div>
-    </div>
-    
-    <div class="alignment-card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17701" target="_blank">#17701</a>
-                <strong>fix(memory-lancedb): add gemini-embedding-001 and baseUrl support</strong>
-                <span class="pr-author">@Phineas1500</span>
-            </div>
-            <div>
-                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">8.6/10</span>
-            </div>
-        </div>
-        <div class="consensus-detail">Well-structured PR that adds Gemini embedding support with proper configuration handling, good test coverage, and maintains backward compatibility.</div>
-    </div>
-    
-    <div class="alignment-card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17696" target="_blank">#17696</a>
-                <strong>fix(memory-lancedb): add gemini-embedding-001 and baseUrl support</strong>
-                <span class="pr-author">@aldoeliacim</span>
-            </div>
-            <div>
-                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">8.2/10</span>
-            </div>
-        </div>
-        <div class="consensus-detail">Well-implemented feature addition with proper type safety and validation, though it lacks new tests and has minor documentation inconsistencies.</div>
-    </div>
-    
-    <div class="alignment-card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17559" target="_blank">#17559</a>
-                <strong>fix: don't rotate auth profile on timeout during active tool use</strong>
-                <span class="pr-author">@jg-noncelogic</span>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17561" target="_blank">#17561</a>
+                <strong>fix(cron): add runtime staleness guard for runningAtMs (#17554)</strong>
+                <span class="pr-author">@robbyczgw-cla</span>
             </div>
             <div>
                 <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">8.1/10</span>
             </div>
         </div>
-        <div class="consensus-detail">Well-focused fix with clear logic and good documentation, but lacks automated tests for the timeout scenario being addressed.</div>
+        <div class="consensus-detail">Well-structured fix for a specific cron staleness issue with good error handling and logging, but lacks comprehensive test coverage for the new functionality.</div>
     </div>
     
     <div class="alignment-card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/16554" target="_blank">#16554</a>
-                <strong>fix(agent): prevent session deadlock on timeout during tool execution</strong>
-                <span class="pr-author">@mverrilli</span>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17664" target="_blank">#17664</a>
+                <strong>fix(cron): detect and clear stale runningAtMs marker in manual run (#17554)</strong>
+                <span class="pr-author">@echoVic</span>
             </div>
             <div>
-                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">7.7/10</span>
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">7.9/10</span>
             </div>
         </div>
-        <div class="consensus-detail">Well-structured fix that follows established patterns from previous timeout handling, with good state management and clear timeout classification logic, though test coverage could be more comprehensive.</div>
+        <div class="consensus-detail">Well-implemented defensive fix with clear logic and good error handling, but lacks tests for the new staleness detection functionality.</div>
     </div>
     
 
     <footer>
         Generated by <strong>claw-review</strong> · Multi-model consensus PR triage
-        <br>2026-02-16 04:09 UTC
+        <br>2026-02-16 06:23 UTC
     </footer>
 </body>
 </html>
