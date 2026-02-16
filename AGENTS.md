@@ -372,3 +372,360 @@ Before sprint completion:
 - [ ] pyproject.toml installs cleanly: `pip install -e .`
 - [ ] All Python files have module-level docstrings
 - [ ] No hardcoded API keys anywhere in source
+
+
+# Sprint 2 — Async Parallelism, Cost Optimization & Scale
+
+## Sprint 2 Mission
+
+Transform claw-review from a sequential PoC into a production-grade tool capable
+of analyzing 6,000+ PRs efficiently. Three priorities: (1) async parallel API
+calls to cut runtime 3-5x, (2) model presets to reduce costs by 10-50x, and
+(3) incremental analysis to avoid re-processing known PRs.
+
+**Sprint Duration:** 48–72 hours
+**Predecessor:** Sprint 1 — 197 tests, 99% coverage, 0 failures. Live report
+generated against openclaw/openclaw (100 PRs, $1.83 total cost, 865 API calls).
+
+**Key Metrics from Sprint 1 Live Run:**
+- 100 PRs analyzed, 865 OpenRouter requests, 2.69M tokens, $1.83 total
+- GPT-4o consumed 93.4% of budget ($1.71) despite equal request count
+- All 3 models got 287 requests each (perfectly balanced)
+- Runtime: ~20 minutes (sequential API calls)
+
+**Sprint 2 Targets:**
+- Runtime: <5 minutes for 100 PRs (async parallel)
+- Cost: <$0.50 for 100 PRs on "fast" preset
+- Scale: Support 6,000+ PRs via batched incremental analysis
+- Tests: 60+ new tests, maintain 99%+ coverage, 0 failures
+
+---
+
+## Team Structure
+
+| Agent | Role | Phase | Test Target |
+|-------|------|-------|-------------|
+| @async-engine | Convert models.py and pipeline to async, connection pooling | Phase 1 (parallel) | 25+ |
+| @cost-optimizer | Model presets, cost estimation, token tracking, budget limits | Phase 1 (parallel) | 20+ |
+| @scale-layer | Incremental analysis, batch processing, resume capability | Phase 2 (sequential) | 15+ |
+
+---
+
+## Dependency Graph
+
+```
+  @async-engine         @cost-optimizer
+   (Phase 1)              (Phase 1)
+        \                    /
+         \                  /
+          \                /
+       ──→ BOTH COMPLETE ←──
+                 |
+                 ▼
+           @scale-layer
+            (Phase 2)
+```
+
+**Phase 1 (parallel):** @async-engine rewrites the model interface while
+@cost-optimizer adds presets and tracking. They touch different files.
+
+**Phase 2 (sequential):** @scale-layer builds on async+cost features to
+enable batched incremental analysis at 6,000+ PR scale.
+
+---
+
+## @async-engine
+
+**Description:** Convert the synchronous httpx model interface to async,
+enabling parallel API calls across all models simultaneously. This is the
+single biggest performance win — instead of 3 sequential calls per PR,
+all 3 fire concurrently.
+
+### File Ownership
+
+```
+src/claw_review/
+├── models.py                      ← @async-engine (rewrite to async)
+├── clustering.py                  ← @async-engine (update to use async models)
+├── scoring.py                     ← @async-engine (update to use async models)
+├── alignment.py                   ← @async-engine (update to use async models)
+tests/
+├── test_models.py                 ← @async-engine (update for async)
+├── test_clustering.py             ← @async-engine (update for async)
+├── test_scoring.py                ← @async-engine (update for async)
+├── test_alignment.py              ← @async-engine (update for async)
+```
+
+### Responsibilities
+
+1. **models.py — Async rewrite**
+   - Convert `ModelPool` to use `httpx.AsyncClient` with connection pooling
+   - `async query_single()` — single model, single request
+   - `async query_all()` — fires ALL models concurrently via `asyncio.gather()`
+   - `async get_embeddings()` — batch embeddings with async client
+   - Configurable concurrency limit (default: 10 simultaneous requests)
+   - Per-model rate limiting (respect OpenRouter rate limits)
+   - Retry with exponential backoff (max 3 retries per request)
+   - Connection pool: keep-alive, max_connections=20
+   - Timeout configuration: connect=10s, read=60s, pool=5s
+   - Session-level client (create once, reuse across all calls)
+
+2. **Pipeline modules — Async updates**
+   - Update `extract_intents()` to use `async for` pattern
+   - Update `score_prs()` to score all PRs concurrently
+   - Update `score_alignment()` to align all PRs concurrently
+   - Batch concurrency: process N PRs simultaneously (default: 5)
+   - Progress callbacks for Rich progress bars
+
+### Key Design Decisions
+
+- Use `asyncio.Semaphore` for concurrency control, NOT unlimited parallelism
+- The semaphore limit should be configurable via CLI `--concurrency N`
+- All 3 models for a single PR fire concurrently (inner parallelism)
+- Multiple PRs process concurrently up to semaphore limit (outer parallelism)
+- Example: --concurrency 5 means 5 PRs × 3 models = 15 simultaneous requests max
+
+### Test Requirements (25+ tests)
+
+- Async query_single: mock responses, timeouts, retries
+- Async query_all: concurrent execution verified (not sequential)
+- Connection pooling: client reuse, cleanup on exit
+- Semaphore: respects concurrency limit
+- Rate limiting: backs off when rate limited (429 response)
+- Retry logic: exponential backoff, max retries, gives up gracefully
+- Pipeline async: extract_intents, score_prs, score_alignment all async
+- Batch processing: correct results with concurrent PR processing
+- Error isolation: one PR failing doesn't crash the batch
+- Progress callbacks: called with correct counts
+
+### Quality Gates
+
+- [ ] All model calls use async httpx (zero synchronous httpx.Client remaining)
+- [ ] asyncio.gather used for concurrent model queries
+- [ ] Semaphore controls concurrency (no unbounded parallelism)
+- [ ] Retry with backoff on 429/500/503 responses
+- [ ] Connection pool properly cleaned up (async context manager)
+- [ ] All tests use pytest-asyncio
+- [ ] Existing test count maintained (no tests deleted, only updated)
+
+---
+
+## @cost-optimizer
+
+**Description:** Add model presets for cost optimization, real-time cost
+tracking, budget limits, and a cost estimation command. Based on Sprint 1
+data: GPT-4o is 93% of cost, so swapping it for GPT-4o-mini or Llama cuts
+total cost by 10-50x.
+
+### File Ownership
+
+```
+src/claw_review/
+├── config.py                      ← @cost-optimizer (add presets)
+├── costs.py                       ← @cost-optimizer (NEW: cost tracking)
+├── cli.py                         ← @cost-optimizer (add estimate + preset flags)
+tests/
+├── test_config.py                 ← @cost-optimizer (update for presets)
+├── test_costs.py                  ← @cost-optimizer (NEW)
+├── test_cli.py                    ← @cost-optimizer (update for new commands)
+```
+
+### Responsibilities
+
+1. **costs.py — NEW: Cost tracking and estimation**
+   - Token price table for common OpenRouter models (per 1M input/output tokens)
+   - `CostTracker` class: accumulates per-model token usage and cost
+   - `estimate_cost(num_prs, models, analysis_types)` → estimated cost
+   - `format_cost_report()` → Rich table showing per-model breakdown
+   - Real-time cost tracking: update after each API call from usage data
+   - Budget limit: `--budget 5.00` stops analysis if budget exceeded
+   - Cost summary appended to HTML/JSON report
+
+2. **config.py — Model presets**
+   Add preset configurations:
+   ```
+   PRESETS = {
+       "fast": {
+           "models": [
+               "meta-llama/llama-3.1-70b-instruct",
+               "mistralai/mistral-large-latest",
+               "google/gemini-2.0-flash-001",
+           ],
+           "description": "Fastest & cheapest. Good for initial scan.",
+           "est_cost_per_100_prs": "$0.15-0.30",
+       },
+       "balanced": {
+           "models": [
+               "anthropic/claude-sonnet-4",
+               "openai/gpt-4o-mini",
+               "google/gemini-2.0-flash-001",
+           ],
+           "description": "Best quality/cost ratio. Recommended for most use.",
+           "est_cost_per_100_prs": "$0.30-0.60",
+       },
+       "thorough": {
+           "models": [
+               "anthropic/claude-sonnet-4",
+               "openai/gpt-4o",
+               "google/gemini-2.0-flash-001",
+           ],
+           "description": "Highest quality. Sprint 1 default.",
+           "est_cost_per_100_prs": "$1.50-2.50",
+       },
+   }
+   ```
+
+3. **cli.py — New flags and commands**
+   - `--preset fast|balanced|thorough` (overrides MODELS env var)
+   - `--budget 5.00` (halt if estimated cost exceeds budget)
+   - `claw-review estimate --repo owner/name --max-prs 100` (dry run cost estimate)
+   - `claw-review presets` (list available presets with costs)
+   - Cost summary printed at end of analysis run
+
+### Test Requirements (20+ tests)
+
+- Preset loading: each preset returns correct models
+- Preset override: --preset overrides MODELS env var
+- Cost tracker: accumulates correctly, per-model breakdown
+- Cost estimation: correct math for different PR counts and presets
+- Budget limit: stops when exceeded, partial results saved
+- Token price table: known models have prices, unknown models use fallback
+- Format cost report: Rich table renders correctly
+- CLI: --preset flag, estimate command, presets command
+- Cost in report: HTML and JSON reports include cost summary
+
+### Quality Gates
+
+- [ ] All 3 presets tested with correct model lists
+- [ ] Cost tracker updates from real OpenRouter usage response format
+- [ ] Budget limit saves partial results (doesn't lose work)
+- [ ] Estimate command works without API calls (pure calculation)
+- [ ] Token prices are documented with source/date
+- [ ] Unknown models use conservative fallback pricing
+
+---
+
+## @scale-layer
+
+**Description:** Enable claw-review to handle 6,000+ PRs through incremental
+analysis (skip already-analyzed PRs), batch processing with checkpointing,
+and a merge command to combine multiple batch results.
+
+### File Ownership
+
+```
+src/claw_review/
+├── state.py                       ← @scale-layer (NEW: analysis state management)
+├── batch.py                       ← @scale-layer (NEW: batch orchestration)
+├── report.py                      ← @scale-layer (update: merge reports)
+├── cli.py                         ← @scale-layer (add batch + merge commands)
+tests/
+├── test_state.py                  ← @scale-layer (NEW)
+├── test_batch.py                  ← @scale-layer (NEW)
+├── test_report.py                 ← @scale-layer (update: merge tests)
+├── test_cli.py                    ← @scale-layer (update: batch + merge)
+```
+
+### Responsibilities
+
+1. **state.py — NEW: Analysis state management**
+   - `AnalysisState` stored as JSON in `.claw-review-state/{repo_hash}.json`
+   - Tracks: analyzed PR numbers, analysis timestamp, model config used
+   - `get_unanalyzed_prs(all_prs, state)` → list of new PRs to analyze
+   - `update_state(state, new_results)` → updated state
+   - State includes per-PR: cluster assignment, quality score, alignment score
+   - Force re-analysis with `--force` flag (ignore state)
+
+2. **batch.py — NEW: Batch orchestration**
+   - `BatchProcessor` class: splits large PR lists into configurable batches
+   - Default batch size: 50 PRs (configurable via `--batch-size`)
+   - Checkpoint after each batch (save partial results to state)
+   - Resume capability: if interrupted, restart from last checkpoint
+   - Progress: "Batch 3/12: analyzing PRs 101-150... (cost so far: $0.45)"
+   - Automatic re-clustering after all batches complete (global clusters)
+
+3. **report.py — Merge capability**
+   - `merge_reports(report_files)` → combined report
+   - Re-cluster across merged results (duplicates may span batches)
+   - Re-rank quality scores globally
+   - `claw-review merge report1.json report2.json -o combined.html`
+
+4. **cli.py — New commands**
+   - `claw-review analyze --batch-size 50` (process in batches)
+   - `claw-review analyze --incremental` (skip known PRs, default ON)
+   - `claw-review analyze --force` (re-analyze everything)
+   - `claw-review merge file1.json file2.json` (combine results)
+   - `claw-review status --repo owner/name` (show analysis state)
+
+### Test Requirements (15+ tests)
+
+- State: create, read, update, corrupt file handling
+- Unanalyzed PRs: all new, some new, none new, force flag
+- Batch processing: splits correctly, respects batch size
+- Checkpoint: save after each batch, resume from checkpoint
+- Resume: interrupted mid-batch, restart correctly
+- Merge: two reports, overlapping PRs, re-clustering
+- CLI: batch-size flag, incremental flag, force flag, merge command, status command
+
+### Quality Gates
+
+- [ ] State file is atomic (write to temp, rename)
+- [ ] Checkpoint saves after EVERY batch (no lost work on crash)
+- [ ] Resume produces identical results to uninterrupted run
+- [ ] Merge correctly re-clusters across batch boundaries
+- [ ] --incremental is the default (users don't re-analyze accidentally)
+- [ ] Status command shows useful summary without running analysis
+
+---
+
+## Lead Responsibilities
+
+### Pre-Sprint
+
+1. Update pyproject.toml: add `pytest-asyncio` dependency
+2. Update CLAUDE.md with Sprint 2 context (async patterns, cost data)
+3. Define shared interfaces for CostTracker and AnalysisState
+
+### Phase Gate
+
+1. Verify @async-engine's async models pass all tests
+2. Verify @cost-optimizer's presets and tracking work
+3. Confirm both integrate cleanly before spawning @scale-layer
+
+### Post-Sprint
+
+1. Integration tests: full async pipeline with cost tracking
+2. Live validation: re-run against openclaw/openclaw with `--preset balanced`
+3. Compare: Sprint 1 (sequential, thorough) vs Sprint 2 (async, balanced)
+4. Update README with new commands and presets
+5. Update GitHub Pages site
+
+---
+
+## Global Quality Gates
+
+Before sprint completion:
+
+- [ ] All tests pass: `pytest tests/ -x -q` → 0 failures
+- [ ] Total test count: 250+ (197 existing + 60 new)
+- [ ] Coverage: maintain 99%+
+- [ ] Type checking: `mypy src/claw_review/ --ignore-missing-imports` → 0 errors
+- [ ] Linting: `ruff check src/ tests/` → 0 violations
+- [ ] Async correctness: no blocking calls in async code path
+- [ ] Live run: 100 PRs in <5 minutes with --preset balanced at <$0.50
+
+---
+
+## Expected Outcome
+
+After Sprint 2, the full 6,000+ PR OpenClaw analysis becomes viable:
+
+| Preset | Est. Cost (6K PRs) | Est. Runtime | Quality |
+|--------|-------------------|-------------|---------|
+| fast | ~$9-18 | ~15 min | Good (open-source models) |
+| balanced | ~$18-36 | ~20 min | Great (Claude + cheap GPT + Gemini) |
+| thorough | ~$90-150 | ~30 min | Best (Sprint 1 models) |
+
+**Recommended strategy for 6K PRs:** Run `fast` first for initial clustering,
+then `thorough` only on the duplicate clusters (~200-500 PRs) for quality ranking.
+Two-pass approach: ~$12-25 total for full repo analysis.

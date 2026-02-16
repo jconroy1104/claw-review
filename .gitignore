@@ -1,7 +1,11 @@
 # Environment
 .env
+.env.save*
 .venv/
 venv/
+
+# Coverage
+.coverage
 
 # Cache
 .claw-review-cache/

@@ -181,3 +181,167 @@ This project demonstrates general multi-model consensus concepts using standard
 techniques (majority voting, weighted averaging, DBSCAN clustering). It does NOT
 implement any proprietary fusion algorithms. All consensus logic should remain
 intentionally simple.
+
+
+# Sprint 2 Context — Async, Cost Optimization & Scale
+
+## Sprint 1 Results (Live Run)
+
+- **Repo:** openclaw/openclaw (193K stars, 6,000+ open PRs)
+- **Sample:** 100 PRs analyzed
+- **Findings:** 3 duplicate clusters, 7 duplicate PRs, 0 vision drift flags
+- **Cost:** $1.83 total (GPT-4o: $1.71 / Gemini Flash: $0.10 / Claude Sonnet: $0.02)
+- **Runtime:** ~20 minutes (sequential API calls)
+- **Report:** Published at jconroy1104.github.io/claw-review/claw-review-report.html
+
+## Sprint 2 Goals
+
+1. **Async parallel API calls** — 3-5x faster runtime
+2. **Model presets** — 10-50x cost reduction on cheaper models
+3. **Incremental analysis** — only process new/changed PRs
+4. **Batch processing** — handle 6,000+ PRs with checkpointing
+
+## Async Patterns
+
+### httpx.AsyncClient
+```python
+# CORRECT: Session-level async client with connection pooling
+async with httpx.AsyncClient(
+    timeout=httpx.Timeout(connect=10, read=60, pool=5),
+    limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
+    headers=self._headers,
+) as client:
+    # Client lives for entire analysis run
+    ...
+```
+
+### Concurrent Model Queries
+```python
+# CORRECT: All models fire concurrently for each PR
+async def query_all(self, system_prompt, user_prompt, ...):
+    tasks = [
+        self.query_single(model, system_prompt, user_prompt)
+        for model in self.models
+    ]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    return [r for r in results if not isinstance(r, Exception)]
+```
+
+### Semaphore for Concurrency Control
+```python
+# CORRECT: Limit total concurrent requests
+semaphore = asyncio.Semaphore(concurrency_limit)
+
+async def _rate_limited_query(self, model, system_prompt, user_prompt):
+    async with semaphore:
+        return await self.query_single(model, system_prompt, user_prompt)
+```
+
+### Batch PR Processing
+```python
+# CORRECT: Process N PRs concurrently, each with 3 concurrent model calls
+async def process_batch(prs, model_pool, batch_size=5):
+    for i in range(0, len(prs), batch_size):
+        batch = prs[i:i + batch_size]
+        results = await asyncio.gather(*[
+            process_single_pr(pr, model_pool) for pr in batch
+        ])
+        yield results  # Checkpoint after each batch
+```
+
+## Cost Data (OpenRouter, February 2026)
+
+Per 1M tokens (approximate):
+
+| Model | Input | Output | Notes |
+|-------|-------|--------|-------|
+| anthropic/claude-sonnet-4 | $3.00 | $15.00 | Best reasoning |
+| openai/gpt-4o | $2.50 | $10.00 | 93% of Sprint 1 cost |
+| openai/gpt-4o-mini | $0.15 | $0.60 | 17x cheaper than GPT-4o |
+| google/gemini-2.0-flash-001 | $0.10 | $0.40 | Cheapest name-brand |
+| meta-llama/llama-3.1-70b-instruct | $0.50 | $0.50 | Best open-source |
+| mistralai/mistral-large-latest | $2.00 | $6.00 | Strong European model |
+
+**Key insight:** Replacing GPT-4o ($1.71) with GPT-4o-mini (~$0.10) in the
+"balanced" preset saves 94% of the biggest cost line while maintaining
+Claude Sonnet for quality reasoning.
+
+## Testing Async Code
+
+All async tests use pytest-asyncio:
+
+```python
+import pytest
+
+@pytest.mark.asyncio
+async def test_query_all_concurrent():
+    """Verify all models are queried concurrently, not sequentially."""
+    ...
+```
+
+Mock async httpx responses:
+```python
+import httpx
+from pytest_httpx import HTTPXMock
+
+@pytest.mark.asyncio
+async def test_with_mock(httpx_mock: HTTPXMock):
+    httpx_mock.add_response(json={"choices": [...]})
+    ...
+```
+
+## File Structure After Sprint 2
+
+```
+src/claw_review/
+├── __init__.py
+├── config.py            ← Updated: model presets
+├── costs.py             ← NEW: cost tracking and estimation
+├── state.py             ← NEW: incremental analysis state
+├── batch.py             ← NEW: batch orchestration
+├── github_client.py
+├── models.py            ← Updated: async httpx
+├── clustering.py        ← Updated: async pipeline
+├── scoring.py           ← Updated: async pipeline
+├── alignment.py         ← Updated: async pipeline
+├── report.py            ← Updated: merge capability, cost summary
+└── cli.py               ← Updated: new commands and flags
+```
+
+## New CLI Commands (Sprint 2)
+
+```bash
+# List presets
+claw-review presets
+
+# Estimate cost before running
+claw-review estimate --repo openclaw/openclaw --preset balanced
+
+# Run with preset (10x cheaper than Sprint 1)
+claw-review analyze --repo openclaw/openclaw --preset balanced
+
+# Run with budget limit
+claw-review analyze --repo openclaw/openclaw --budget 5.00
+
+# Batch processing for large repos
+claw-review analyze --repo openclaw/openclaw --batch-size 50
+
+# Incremental (skip known PRs — default behavior)
+claw-review analyze --repo openclaw/openclaw --incremental
+
+# Force re-analysis
+claw-review analyze --repo openclaw/openclaw --force
+
+# Merge multiple batch results
+claw-review merge batch1.json batch2.json -o full-report.html
+
+# Check analysis state
+claw-review status --repo openclaw/openclaw
+```
+
+## IP Notice (Unchanged)
+
+This project demonstrates general multi-model consensus concepts using standard
+techniques (majority voting, weighted averaging, DBSCAN clustering). It does NOT
+implement any proprietary fusion algorithms. All consensus logic should remain
+intentionally simple.
