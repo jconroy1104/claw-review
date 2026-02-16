@@ -1,0 +1,115 @@
+[
+  {
+    "cluster_id": "cluster-0",
+    "intent_summary": "Fix WebSocket reconnection after gateway timeout",
+    "category": "bugfix",
+    "affected_area": "websocket",
+    "confidence": 0.92,
+    "prs": [
+      {
+        "number": 101,
+        "title": "Fix WebSocket reconnection",
+        "author": "alice",
+        "url": "https://github.com/test/repo/pull/101",
+        "intent": "Fix WebSocket reconnect after timeout",
+        "quality_score": 8.2,
+        "quality_rank": 1,
+        "needs_human_review": false,
+        "quality_summary": "Solid fix with good test coverage"
+      },
+      {
+        "number": 102,
+        "title": "Fix WS reconnect on timeout",
+        "author": "bob",
+        "url": "https://github.com/test/repo/pull/102",
+        "intent": "Resolve WebSocket reconnection failure",
+        "quality_score": 6.4,
+        "quality_rank": 2,
+        "needs_human_review": true,
+        "quality_summary": "Decent approach but lacks tests"
+      },
+      {
+        "number": 106,
+        "title": "Fix WebSocket disconnect handling",
+        "author": "frank",
+        "url": "https://github.com/test/repo/pull/106",
+        "intent": "Handle WebSocket disconnect events properly",
+        "quality_score": 5.1,
+        "quality_rank": 3,
+        "needs_human_review": false,
+        "quality_summary": "Partial fix, misses edge cases"
+      }
+    ]
+  },
+  {
+    "cluster_id": "cluster-1",
+    "intent_summary": "Add dark mode toggle to user settings",
+    "category": "feature",
+    "affected_area": "UI",
+    "confidence": 0.88,
+    "prs": [
+      {
+        "number": 103,
+        "title": "Add dark mode to settings",
+        "author": "carol",
+        "url": "https://github.com/test/repo/pull/103",
+        "intent": "Add dark mode toggle to user settings page",
+        "quality_score": 7.8,
+        "quality_rank": 1,
+        "needs_human_review": false,
+        "quality_summary": "Clean implementation with theme support"
+      },
+      {
+        "number": 105,
+        "title": "Add dark theme support",
+        "author": "eve",
+        "url": "https://github.com/test/repo/pull/105",
+        "intent": "Implement dark theme support in the UI",
+        "quality_score": 7.2,
+        "quality_rank": 2,
+        "needs_human_review": false,
+        "quality_summary": "Good but duplicates existing work"
+      }
+    ]
+  },
+  {
+    "cluster_id": "singleton-104",
+    "intent_summary": "Refactor authentication middleware to reduce complexity",
+    "category": "refactor",
+    "affected_area": "auth",
+    "confidence": 1.0,
+    "prs": [
+      {
+        "number": 104,
+        "title": "Refactor auth middleware",
+        "author": "dave",
+        "url": "https://github.com/test/repo/pull/104",
+        "intent": "Refactor authentication middleware for clarity",
+        "quality_score": 8.5,
+        "quality_rank": 1,
+        "needs_human_review": false,
+        "quality_summary": "Excellent refactoring with comprehensive tests"
+      }
+    ]
+  },
+  {
+    "cluster_id": "singleton-107",
+    "intent_summary": "Update CI pipeline configuration for Node 20",
+    "category": "config",
+    "affected_area": "build",
+    "confidence": 1.0,
+    "prs": [
+      {
+        "number": 107,
+        "title": "Update CI pipeline",
+        "author": "grace",
+        "url": "https://github.com/test/repo/pull/107",
+        "intent": "Update CI pipeline to use Node 20",
+        "quality_score": 6.0,
+        "quality_rank": 1,
+        "needs_human_review": true,
+        "quality_summary": "Simple config change, needs verification"
+      }
+    ]
+  }
+]

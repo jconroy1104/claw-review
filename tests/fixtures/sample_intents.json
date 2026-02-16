@@ -1,0 +1,86 @@
+[
+  {
+    "pr_number": 101,
+    "pr_title": "Fix WebSocket reconnection",
+    "pr_author": "alice",
+    "pr_url": "https://github.com/test/repo/pull/101",
+    "intent_descriptions": {
+      "anthropic/claude-sonnet-4": "Fix WebSocket reconnect after timeout"
+    },
+    "consensus_intent": "Fix WebSocket reconnection after gateway timeout",
+    "category": "bugfix",
+    "affected_area": "websocket"
+  },
+  {
+    "pr_number": 102,
+    "pr_title": "Fix WS reconnect on timeout",
+    "pr_author": "bob",
+    "pr_url": "https://github.com/test/repo/pull/102",
+    "intent_descriptions": {
+      "anthropic/claude-sonnet-4": "Resolve WebSocket reconnection failure on gateway timeout"
+    },
+    "consensus_intent": "Fix WebSocket reconnection when gateway times out",
+    "category": "bugfix",
+    "affected_area": "websocket"
+  },
+  {
+    "pr_number": 103,
+    "pr_title": "Add dark mode to settings",
+    "pr_author": "carol",
+    "pr_url": "https://github.com/test/repo/pull/103",
+    "intent_descriptions": {
+      "anthropic/claude-sonnet-4": "Add dark mode toggle to user settings"
+    },
+    "consensus_intent": "Add dark mode toggle to user settings page",
+    "category": "feature",
+    "affected_area": "UI"
+  },
+  {
+    "pr_number": 104,
+    "pr_title": "Refactor auth middleware",
+    "pr_author": "dave",
+    "pr_url": "https://github.com/test/repo/pull/104",
+    "intent_descriptions": {
+      "anthropic/claude-sonnet-4": "Refactor authentication middleware for clarity"
+    },
+    "consensus_intent": "Refactor authentication middleware to reduce complexity",
+    "category": "refactor",
+    "affected_area": "auth"
+  },
+  {
+    "pr_number": 105,
+    "pr_title": "Add dark theme support",
+    "pr_author": "eve",
+    "pr_url": "https://github.com/test/repo/pull/105",
+    "intent_descriptions": {
+      "anthropic/claude-sonnet-4": "Implement dark theme support in the UI"
+    },
+    "consensus_intent": "Add dark theme support to the user interface",
+    "category": "feature",
+    "affected_area": "UI"
+  },
+  {
+    "pr_number": 106,
+    "pr_title": "Fix WebSocket disconnect handling",
+    "pr_author": "frank",
+    "pr_url": "https://github.com/test/repo/pull/106",
+    "intent_descriptions": {
+      "anthropic/claude-sonnet-4": "Handle WebSocket disconnect events properly"
+    },
+    "consensus_intent": "Fix WebSocket disconnect handling after gateway timeout",
+    "category": "bugfix",
+    "affected_area": "websocket"
+  },
+  {
+    "pr_number": 107,
+    "pr_title": "Update CI pipeline",
+    "pr_author": "grace",
+    "pr_url": "https://github.com/test/repo/pull/107",
+    "intent_descriptions": {
+      "anthropic/claude-sonnet-4": "Update CI pipeline to use Node 20"
+    },
+    "consensus_intent": "Update CI pipeline configuration for Node 20",
+    "category": "config",
+    "affected_area": "build"
+  }
+]

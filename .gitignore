@@ -1,0 +1,22 @@
+# Environment
+.env
+.venv/
+venv/
+
+# Cache
+.claw-review-cache/
+
+# Output
+*.html
+claw-review-report.*
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
