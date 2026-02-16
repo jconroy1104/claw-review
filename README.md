@@ -1,49 +1,46 @@
 # 🦞 claw-review
 
-**AI-powered PR triage using multi-model consensus.**
+**Domain-agnostic multi-model consensus platform.**
 
-When your repo gets thousands of PRs and you can't tell which ones are duplicates, which is the best implementation, or which ones drift from your architecture — `claw-review` helps.
+A pluggable platform that queries multiple AI models independently, fuses their judgments using consensus voting, and produces interactive reports. Originally built for GitHub PR triage, now supports any domain through adapters — cybersecurity alert triage, fraud detection, and more.
 
-It queries multiple AI models independently, fuses their judgments, and produces a report showing:
+**Core capabilities:**
+- **Duplicate clustering** — Group items solving the same problem using semantic intent + DBSCAN
+- **Quality ranking** — Score items across configurable dimensions with multi-model consensus
+- **Vision alignment** — Flag items that drift from stated policies or goals
+- **Interactive dashboard** — Filter, sort, and explore results in a dark-themed web UI
 
-- **Duplicate clusters** — PRs solving the same problem, grouped by semantic intent
-- **Quality rankings** — Best implementation per cluster, scored across 5 dimensions
-- **Vision alignment** — How well each PR fits your project's stated direction
+**Built-in domains:**
+- **GitHub PRs** — De-duplicate PRs, rank implementations, flag architectural drift
+- **Cybersecurity** — Correlate SIEM alerts by attack campaign, score threat severity
+- **Fraud Detection** — Group suspicious transactions, score anomaly patterns
 
 ## How it works
 
 ```
-                    ┌──────────────────┐
-                    │   GitHub API     │
-                    │  (open PRs)      │
-                    └────────┬─────────┘
-                             │
-                    ┌────────▼─────────┐
-                    │  Multi-Model     │
-                    │  Consensus       │
-                    │                  │
-                    │  Claude ──┐      │
-                    │  GPT-4o ──┼─ 🗳  │
-                    │  Gemini ──┘      │
-                    └────────┬─────────┘
-                             │
-              ┌──────────────┼──────────────┐
-              ▼              ▼              ▼
-     ┌────────────┐  ┌─────────────┐ ┌───────────┐
-     │  Intent    │  │  Quality    │ │  Vision   │
-     │  Clusters  │  │  Scores     │ │  Align    │
-     │  (de-dup)  │  │  (ranking)  │ │  (drift)  │
-     └────────────┘  └─────────────┘ └───────────┘
-              │              │              │
-              └──────────────┼──────────────┘
-                             ▼
-                    ┌────────────────┐
-                    │  HTML + JSON   │
-                    │  Report        │
-                    └────────────────┘
+                    ┌──────────────────────────────────────┐
+                    │       claw-review Platform           │
+                    │                                      │
+                    │   ConsensusEngine (domain-agnostic)  │
+                    │   ModelPool (OpenRouter, async)       │
+                    │   CostTracker / BatchProcessor       │
+                    └──────────┬───────────────────────────┘
+                               │
+              ┌────────────────┼────────────────┐
+              ▼                ▼                ▼
+        ┌──────────┐    ┌──────────┐    ┌──────────┐
+        │ GitHub   │    │  Cyber   │    │  Fraud   │
+        │ PR       │    │ Security │    │Detection │
+        │ Adapter  │    │ Adapter  │    │ Adapter  │
+        └────┬─────┘    └──────────┘    └──────────┘
+             │
+    ┌────────┼────────┐
+    ▼        ▼        ▼
+  Webhook  Actions  Dashboard
+  Bot      CI/CD    Explorer
 ```
 
-Each model evaluates every PR independently. Their assessments are fused using consensus voting — if 2 out of 3 models agree on a PR's intent, category, or quality, that's the consensus. When models disagree significantly, the PR gets flagged for human review.
+Each model evaluates every item independently. Their assessments are fused using consensus voting — if 2 out of 3 models agree on intent, category, or quality, that's the consensus. When models disagree significantly, the item gets flagged for human review.
 
 This isn't a single-model review bot. It's a **consensus system** — the same pattern used in safety-critical AI for high-stakes decisions.
 
@@ -163,41 +160,89 @@ claw-review regenerate claw-review-report.json
 claw-review check
 ```
 
+### Interactive dashboard
+
+Generate a self-contained HTML dashboard from any report:
+
+```bash
+# Generate static dashboard (no server required)
+claw-review dashboard --static -o dashboard.html
+
+# Or use the Python API
+python -c "
+from claw_review.dashboard import generate_static_dashboard
+generate_static_dashboard(['claw-review-report.json'], output='dashboard.html')
+"
+```
+
+The dashboard features:
+- Summary cards (PRs analyzed, clusters, drift flags, cost)
+- 5 tabs: Overview, Clusters, Quality, Alignment, Cost
+- Client-side filtering, sorting, and search
+- Dark theme matching GitHub's design
+- Zero server dependencies — deploy directly to GitHub Pages
+
+### GitHub App integration
+
+Set up automated PR triage with webhooks:
+
+```bash
+# Generate a GitHub Actions workflow for your repo
+python -c "
+from claw_review.github.actions import save_workflow
+save_workflow('.', preset='balanced')
+"
+# Creates .github/workflows/claw-review.yml
+```
+
+The GitHub integration includes:
+- **Webhook receiver** — FastAPI endpoint for `pull_request` events with HMAC-SHA256 verification
+- **PR comment bot** — Posts consensus results directly on PRs (update-not-spam pattern)
+- **GitHub App auth** — JWT/RS256 authentication with installation token caching
+- **Actions workflow** — Auto-generated CI/CD for PR-triggered analysis
+
 ## Output
 
-The tool generates two files:
+The tool generates:
 
 - **`claw-review-report.html`** — Visual report with duplicate clusters, quality rankings, and vision alignment flags. Open in any browser.
 - **`claw-review-report.json`** — Machine-readable data for further processing.
+- **`dashboard.html`** — Interactive dashboard with filtering, sorting, and exploration (via `--static` flag).
 
-## How consensus works
+## Platform architecture
 
-### Intent clustering (de-duplication)
+claw-review is built on a domain-agnostic consensus engine with pluggable adapters:
 
-1. Each model extracts a one-sentence intent from each PR
+| Component | Description |
+|-----------|-------------|
+| `ConsensusEngine` | Orchestrates intent extraction, clustering, scoring, alignment for any domain |
+| `DataAdapter` | Protocol for fetching items from any data source |
+| `DomainConfig` | Prompts, dimensions, thresholds, and recommendation levels per domain |
+| `AdapterRegistry` | Runtime discovery and registration of domain adapters |
+
+### Built-in domains
+
+| Domain | Adapter | Scoring Dimensions | Recommendations |
+|--------|---------|-------------------|-----------------|
+| `github-pr` | GitHub API (PRs) | code_quality, test_coverage, scope_discipline, breaking_risk, style_consistency | MERGE, REVIEW, DISCUSS, CLOSE |
+| `cybersecurity` | SIEM alerts (JSON) | threat_severity, confidence, attack_sophistication, asset_criticality, actionability | BLOCK, INVESTIGATE, MONITOR, DISMISS |
+| `fraud-detection` | Transactions (JSON/CSV) | anomaly_score, pattern_match, velocity_risk, geographic_risk, amount_deviation | APPROVE, FLAG, HOLD, BLOCK |
+
+### How consensus works
+
+**Intent clustering (de-duplication):**
+1. Each model extracts a one-sentence intent from each item
 2. Intents are converted to embeddings (OpenAI text-embedding-3-small)
-3. DBSCAN clusters PRs with >82% cosine similarity
+3. DBSCAN clusters items with configurable cosine similarity threshold
 4. Category and affected area are determined by majority vote
 
-### Quality scoring
+**Quality scoring:**
+Each model scores items on domain-specific dimensions (1-10). Consensus is the arithmetic mean. If models disagree by more than the disagreement threshold on any dimension, the item is flagged for human review.
 
-Each model scores PRs on 5 dimensions (1-10):
-
-| Dimension | What it measures |
-|-----------|-----------------|
-| Code quality | Readability, error handling, edge cases |
-| Test coverage | Are tests included? Edge cases covered? |
-| Scope discipline | Does the PR stay focused? |
-| Breaking risk | Likelihood of breaking existing functionality |
-| Style consistency | Match with project conventions |
-
-Consensus: weighted average. If models disagree by >3 points on any dimension, the PR is flagged for human review.
-
-### Vision alignment
-
-1. Loads the repo's README, CONTRIBUTING, and ARCHITECTURE docs
-2. Each model scores how well each PR aligns with stated goals (1-10)
-3. PRs scoring below 4 get a CLOSE recommendation
+**Vision/policy alignment:**
+1. Loads context documents (README, security policy, fraud rules, etc.)
+2. Each model scores how well each item aligns with stated goals (1-10)
+3. Items scoring below the rejection threshold get flagged
 4. Specific drift concerns are listed
 
 ## Caching
@@ -227,6 +272,30 @@ Use `--skip-alignment`, `--skip-quality`, or `--budget` to control spend.
 | `claw-review status` | Show analysis state for a repo |
 | `claw-review merge` | Combine multiple JSON reports |
 | `claw-review regenerate` | Regenerate HTML from JSON |
+
+## Development
+
+```bash
+# Install with dev dependencies
+pip install -e ".[dev]"
+
+# Run tests (457 tests, 99% coverage)
+pytest tests/ -x -q
+
+# Lint
+ruff check src/ tests/
+
+# Type check
+mypy src/claw_review/ --ignore-missing-imports
+```
+
+## Sprint history
+
+| Sprint | Focus | Tests | Key additions |
+|--------|-------|-------|---------------|
+| 1 | Core pipeline | 197 | GitHub API, multi-model consensus, DBSCAN clustering, HTML reports |
+| 2 | Performance & scale | 298 | Async parallel, model presets, cost tracking, batch processing |
+| 3 | Platform & integration | 457 | Domain-agnostic engine, adapters, GitHub App, dashboard |
 
 ## License
 
