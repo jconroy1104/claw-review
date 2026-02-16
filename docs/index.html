@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClawReview Report — openclaw/openclaw</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --border: #30363d;
+            --text: #e6edf3;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --green: #3fb950;
+            --yellow: #d29922;
+            --red: #f85149;
+            --orange: #db6d28;
+            --purple: #bc8cff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.4rem; margin: 2rem 0 1rem; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.1rem; margin: 1rem 0 0.5rem; }
+        .meta { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.2rem;
+            text-align: center;
+        }
+        .stat-card .number { font-size: 2rem; font-weight: 700; color: var(--accent); }
+        .stat-card .label { color: var(--text-muted); font-size: 0.85rem; }
+        .cluster {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin: 1rem 0;
+        }
+        .cluster.duplicate { border-left: 4px solid var(--yellow); }
+        .cluster.singleton { border-left: 4px solid var(--text-muted); }
+        .cluster-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-dup { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+        .badge-category { background: rgba(88, 166, 255, 0.2); color: var(--accent); }
+        .badge-merge { background: rgba(63, 185, 80, 0.2); color: var(--green); }
+        .badge-review { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+        .badge-discuss { background: rgba(188, 140, 255, 0.2); color: var(--purple); }
+        .badge-close { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+        .pr-row {
+            display: grid;
+            grid-template-columns: 50px 1fr 100px 100px;
+            gap: 0.5rem;
+            align-items: center;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+        .pr-row:last-child { border-bottom: none; }
+        .pr-rank {
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        .pr-rank.best { color: var(--green); }
+        .pr-link { color: var(--accent); text-decoration: none; }
+        .pr-link:hover { text-decoration: underline; }
+        .pr-author { color: var(--text-muted); font-size: 0.8rem; }
+        .score-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: var(--border);
+            overflow: hidden;
+        }
+        .score-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        .score-fill.high { background: var(--green); }
+        .score-fill.med { background: var(--yellow); }
+        .score-fill.low { background: var(--red); }
+        .alignment-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.8rem 0;
+        }
+        .alignment-card.flagged { border-left: 4px solid var(--red); }
+        .drift-list { margin: 0.5rem 0 0 1.2rem; color: var(--text-muted); font-size: 0.85rem; }
+        .drift-list li { margin: 0.2rem 0; }
+        .section-desc { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; }
+        .human-review-flag {
+            color: var(--orange);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .consensus-detail { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem; }
+        footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>🦞 ClawReview Report</h1>
+    <div class="meta">
+        <strong>openclaw/openclaw</strong> · 100 open PRs analyzed · 2026-02-16 06:23 UTC
+        <br>Models: anthropic/claude-sonnet-4, openai/gpt-4o-mini, google/gemini-2.0-flash-001
+    </div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <div class="number">100</div>
+            <div class="label">PRs Analyzed</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">1</div>
+            <div class="label">Duplicate Clusters</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">2</div>
+            <div class="label">Duplicate PRs</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">3</div>
+            <div class="label">Vision Drift Flags</div>
+        </div>
+    </div>
+
+    <!-- DUPLICATE CLUSTERS -->
+    <h2>🔀 Duplicate Clusters</h2>
+    <p class="section-desc">PRs grouped by semantic intent. Within each cluster, PRs are ranked by quality score — #1 is the recommended merge candidate.</p>
+
+    
+    <div class="cluster duplicate">
+        <div class="cluster-header">
+            <div>
+                <h3>Adds a runtime staleness check to the cron job scheduler to prevent jobs from being permanently blocked due to a stale `runningAtMs` timestamp, ensuring that jobs can recover from transient failures or race conditions that prevent the timestamp from being cleared after completion.</h3>
+                <span class="badge badge-dup">2 duplicates</span>
+                <span class="badge badge-category">bugfix</span>
+                <span style="color: var(--text-muted); font-size: 0.8rem; margin-left: 0.5rem;">
+                    area: cron · confidence: 89.0%
+                </span>
+            </div>
+        </div>
+        <div>
+            <div class="pr-row" style="font-weight: 600; color: var(--text-muted); font-size: 0.8rem;">
+                <div>Rank</div>
+                <div>Pull Request</div>
+                <div>Quality</div>
+                <div>Review</div>
+            </div>
+            
+            <div class="pr-row">
+                <div class="pr-rank best">
+                    ⭐#1
+                </div>
+                <div>
+                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17561" target="_blank">#17561</a>
+                    fix(cron): add runtime staleness guard for runningAtMs (#17554)
+                    <div class="pr-author">@robbyczgw-cla</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; margin-bottom: 2px;">8.1/10</div>
+                    <div class="score-bar">
+                        <div class="score-fill high"
+                             style="width: 80.60000000000001%"></div>
+                    </div>
+                </div>
+                <div>
+                    
+                    <span class="human-review-flag">⚠ Human Review</span>
+                    
+                </div>
+            </div>
+            
+            <div class="pr-row">
+                <div class="pr-rank ">
+                    #2
+                </div>
+                <div>
+                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17664" target="_blank">#17664</a>
+                    fix(cron): detect and clear stale runningAtMs marker in manual run (#17554)
+                    <div class="pr-author">@echoVic</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; margin-bottom: 2px;">7.9/10</div>
+                    <div class="score-bar">
+                        <div class="score-fill high"
+                             style="width: 79.3%"></div>
+                    </div>
+                </div>
+                <div>
+                    
+                    <span class="human-review-flag">⚠ Human Review</span>
+                    
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    
+
+    
+
+    <!-- VISION ALIGNMENT -->
+    <h2>🧭 Vision Alignment</h2>
+    <p class="section-desc">How well each PR aligns with the project's stated architecture and goals. Low scores indicate potential drift.</p>
+
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17764" target="_blank">#17764</a>
+                <strong>fix: CLI update module loading - syntax fixes (v2)</strong>
+                <span class="pr-author">@Limitless2023</span>
+            </div>
+            <div>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.7/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Introduces duplicate imports that will cause TypeScript compilation to fail</li>
+            
+            <li>Uses incorrect function signature for runCommandWithTimeout (object vs string array)</li>
+            
+            <li>Creates runtime crashes due to wrong calling convention</li>
+            
+            <li>Does not follow the project's emphasis on stability and testing - the fix introduces new blocking errors</li>
+            
+            <li>Violates the 'keep PRs focused' guideline by attempting multiple fixes that create new problems</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This PR introduces compilation-blocking duplicate imports and runtime-crashing function calls, directly conflicting with the project's current focus on stability and the requirement that contributions be properly tested.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17778" target="_blank">#17778</a>
+                <strong>Create gateway-connection.png</strong>
+                <span class="pr-author">@smffff</span>
+            </div>
+            <div>
+                <span class="badge badge-discuss">DISCUSS</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.0/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>PR lacks any description or context despite template requirements</li>
+            
+            <li>No indication of what the image contains or its purpose</li>
+            
+            <li>Violates contributing guidelines requiring description of problem and fix</li>
+            
+            <li>Missing all required PR template sections including security impact assessment</li>
+            
+            <li>No verification or testing information provided</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This PR completely ignores the detailed contribution guidelines and PR template requirements, providing no context for what appears to be a simple image addition.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17777" target="_blank">#17777</a>
+                <strong>fix(tui): prevent URL breaking during line wrap</strong>
+                <span class="pr-author">@proto-genesys-x</span>
+            </div>
+            <div>
+                <span class="badge badge-review">REVIEW</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.7/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Technical approach is fundamentally flawed - ZWNJ characters don't prevent line breaks and will corrupt URLs when copied</li>
+            
+            <li>Solution makes URLs less functional rather than more functional, contradicting the stated goal</li>
+            
+            <li>Includes accidental debug log file (openclaw-2026-02-16.log) suggesting incomplete cleanup</li>
+            
+            <li>Implements a Unicode-based solution that doesn't align with terminal rendering realities</li>
+            
+            <li>The proposed solution using zero-width non-joiner characters may introduce new issues with URL functionality, potentially conflicting with the project's goal of maintaining a reliable user experience.</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">While this addresses a legitimate TUI bug and follows testing practices, the technical solution is fundamentally broken and will make URLs worse rather than better.</div>
+        
+    </div>
+    
+
+    
+
+    <!-- TOP QUALITY -->
+    <h2>⭐ Top Quality PRs</h2>
+    <p class="section-desc">Highest-scoring PRs across all quality dimensions.</p>
+
+    
+    <div class="alignment-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17561" target="_blank">#17561</a>
+                <strong>fix(cron): add runtime staleness guard for runningAtMs (#17554)</strong>
+                <span class="pr-author">@robbyczgw-cla</span>
+            </div>
+            <div>
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">8.1/10</span>
+            </div>
+        </div>
+        <div class="consensus-detail">Well-structured fix for a specific cron staleness issue with good error handling and logging, but lacks comprehensive test coverage for the new functionality.</div>
+    </div>
+    
+    <div class="alignment-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17664" target="_blank">#17664</a>
+                <strong>fix(cron): detect and clear stale runningAtMs marker in manual run (#17554)</strong>
+                <span class="pr-author">@echoVic</span>
+            </div>
+            <div>
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">7.9/10</span>
+            </div>
+        </div>
+        <div class="consensus-detail">Well-implemented defensive fix with clear logic and good error handling, but lacks tests for the new staleness detection functionality.</div>
+    </div>
+    
+
+    <footer>
+        Generated by <strong>claw-review</strong> · Multi-model consensus PR triage
+        <br>2026-02-16 06:23 UTC
+    </footer>
+</body>
+</html>
