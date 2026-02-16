@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClawReview Report — openclaw/openclaw</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --border: #30363d;
+            --text: #e6edf3;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --green: #3fb950;
+            --yellow: #d29922;
+            --red: #f85149;
+            --orange: #db6d28;
+            --purple: #bc8cff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.4rem; margin: 2rem 0 1rem; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.1rem; margin: 1rem 0 0.5rem; }
+        .meta { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.2rem;
+            text-align: center;
+        }
+        .stat-card .number { font-size: 2rem; font-weight: 700; color: var(--accent); }
+        .stat-card .label { color: var(--text-muted); font-size: 0.85rem; }
+        .cluster {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin: 1rem 0;
+        }
+        .cluster.duplicate { border-left: 4px solid var(--yellow); }
+        .cluster.singleton { border-left: 4px solid var(--text-muted); }
+        .cluster-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-dup { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+        .badge-category { background: rgba(88, 166, 255, 0.2); color: var(--accent); }
+        .badge-merge { background: rgba(63, 185, 80, 0.2); color: var(--green); }
+        .badge-review { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+        .badge-discuss { background: rgba(188, 140, 255, 0.2); color: var(--purple); }
+        .badge-close { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+        .pr-row {
+            display: grid;
+            grid-template-columns: 50px 1fr 100px 100px;
+            gap: 0.5rem;
+            align-items: center;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+        .pr-row:last-child { border-bottom: none; }
+        .pr-rank {
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        .pr-rank.best { color: var(--green); }
+        .pr-link { color: var(--accent); text-decoration: none; }
+        .pr-link:hover { text-decoration: underline; }
+        .pr-author { color: var(--text-muted); font-size: 0.8rem; }
+        .score-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: var(--border);
+            overflow: hidden;
+        }
+        .score-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        .score-fill.high { background: var(--green); }
+        .score-fill.med { background: var(--yellow); }
+        .score-fill.low { background: var(--red); }
+        .alignment-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.8rem 0;
+        }
+        .alignment-card.flagged { border-left: 4px solid var(--red); }
+        .drift-list { margin: 0.5rem 0 0 1.2rem; color: var(--text-muted); font-size: 0.85rem; }
+        .drift-list li { margin: 0.2rem 0; }
+        .section-desc { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; }
+        .human-review-flag {
+            color: var(--orange);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .consensus-detail { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem; }
+        footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>🦞 ClawReview Report</h1>
+    <div class="meta">
+        <strong>openclaw/openclaw</strong> · 100 open PRs analyzed · 2026-02-16 04:09 UTC
+        <br>Models: anthropic/claude-sonnet-4, openai/gpt-4o, google/gemini-2.0-flash-001
+    </div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <div class="number">100</div>
+            <div class="label">PRs Analyzed</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">3</div>
+            <div class="label">Duplicate Clusters</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">7</div>
+            <div class="label">Duplicate PRs</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">0</div>
+            <div class="label">Vision Drift Flags</div>
+        </div>
+    </div>
+
+    <!-- DUPLICATE CLUSTERS -->
+    <h2>🔀 Duplicate Clusters</h2>
+    <p class="section-desc">PRs grouped by semantic intent. Within each cluster, PRs are ranked by quality score — #1 is the recommended merge candidate.</p>
+
+    
+    <div class="cluster duplicate">
+        <div class="cluster-header">
+            <div>
+                <h3>Fixes a bug where HEARTBEAT_OK tokens were not being completely stripped from messages in heartbeat mode, leading to unintended delivery of these tokens in Telegram DMs.</h3>
+                <span class="badge badge-dup">3 duplicates</span>
+                <span class="badge badge-category">bugfix</span>
+                <span style="color: var(--text-muted); font-size: 0.8rem; margin-left: 0.5rem;">
+                    area: auto-reply/heartbeat · confidence: 81.0%
+                </span>
+            </div>
+        </div>
+        <div>
+            <div class="pr-row" style="font-weight: 600; color: var(--text-muted); font-size: 0.8rem;">
+                <div>Rank</div>
+                <div>Pull Request</div>
+                <div>Quality</div>
+                <div>Review</div>
+            </div>
+            
+            <div class="pr-row">
+                <div class="pr-rank best">
+                    ⭐#1
+                </div>
+                <div>
+                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/16321" target="_blank">#16321</a>
+                    Fix #12767: suppress HEARTBEAT_OK leakage in Telegram DM replies
+                    <div class="pr-author">@tdjackey</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; margin-bottom: 2px;">8.9/10</div>
+                    <div class="score-bar">
+                        <div class="score-fill high"
+                             style="width: 89.3%"></div>
+                    </div>
+                </div>
+                <div>
+                    
+                    <span style="color: var(--green); font-size: 0.8rem;">✓ Consensus</span>
+                    
+                </div>
+            </div>
+            
+            <div class="pr-row">
+                <div class="pr-rank ">
+                    #2
+                </div>
+                <div>
+                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17371" target="_blank">#17371</a>
+                    fix(heartbeat): always strip HEARTBEAT_OK token from reply text
+                    <div class="pr-author">@BinHPdev</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; margin-bottom: 2px;">8.7/10</div>
+                    <div class="score-bar">
+                        <div class="score-fill high"
+                             style="width: 86.7%"></div>
+                    </div>
+                </div>
+                <div>
+                    
+                    <span class="human-review-flag">⚠ Human Review</span>
+                    
+                </div>
+            </div>
+            
+            <div class="pr-row">
+                <div class="pr-rank ">
+                    #3
+                </div>
+                <div>
+                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17717" target="_blank">#17717</a>
+                    fix: strip HEARTBEAT_OK tokens anywhere in heartbeat mode
+                    <div class="pr-author">@Marvae</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; margin-bottom: 2px;">8.7/10</div>
+                    <div class="score-bar">
+                        <div class="score-fill high"
+                             style="width: 86.6%"></div>
+                    </div>
+                </div>
+                <div>
+                    
+                    <span style="color: var(--green); font-size: 0.8rem;">✓ Consensus</span>
+                    
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    
+    <div class="cluster duplicate">
+        <div class="cluster-header">
+            <div>
+                <h3>Fixes a bug where auth profiles were incorrectly rotated due to timeouts occurring during active tool use, leading to unnecessary cooldowns and potential crash loops in single-account setups.</h3>
+                <span class="badge badge-dup">2 duplicates</span>
+                <span class="badge badge-category">bugfix</span>
+                <span style="color: var(--text-muted); font-size: 0.8rem; margin-left: 0.5rem;">
+                    area: agents · confidence: 87.0%
+                </span>
+            </div>
+        </div>
+        <div>
+            <div class="pr-row" style="font-weight: 600; color: var(--text-muted); font-size: 0.8rem;">
+                <div>Rank</div>
+                <div>Pull Request</div>
+                <div>Quality</div>
+                <div>Review</div>
+            </div>
+            
+            <div class="pr-row">
+                <div class="pr-rank best">
+                    ⭐#1
+                </div>
+                <div>
+                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17559" target="_blank">#17559</a>
+                    fix: don't rotate auth profile on timeout during active tool use
+                    <div class="pr-author">@jg-noncelogic</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; margin-bottom: 2px;">8.1/10</div>
+                    <div class="score-bar">
+                        <div class="score-fill high"
+                             style="width: 80.60000000000001%"></div>
+                    </div>
+                </div>
+                <div>
+                    
+                    <span class="human-review-flag">⚠ Human Review</span>
+                    
+                </div>
+            </div>
+            
+            <div class="pr-row">
+                <div class="pr-rank ">
+                    #2
+                </div>
+                <div>
+                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/16554" target="_blank">#16554</a>
+                    fix(agent): prevent session deadlock on timeout during tool execution
+                    <div class="pr-author">@mverrilli</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; margin-bottom: 2px;">7.7/10</div>
+                    <div class="score-bar">
+                        <div class="score-fill high"
+                             style="width: 76.7%"></div>
+                    </div>
+                </div>
+                <div>
+                    
+                    <span class="human-review-flag">⚠ Human Review</span>
+                    
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    
+    <div class="cluster duplicate">
+        <div class="cluster-header">
+            <div>
+                <h3>Adds support for the Gemini embedding model and a configurable base URL for OpenAI-compatible APIs to the memory-lancedb plugin, and fixes a TUI crash related to terminal width overflow.</h3>
+                <span class="badge badge-dup">2 duplicates</span>
+                <span class="badge badge-category">feature</span>
+                <span style="color: var(--text-muted); font-size: 0.8rem; margin-left: 0.5rem;">
+                    area: memory-lancedb · confidence: 84.0%
+                </span>
+            </div>
+        </div>
+        <div>
+            <div class="pr-row" style="font-weight: 600; color: var(--text-muted); font-size: 0.8rem;">
+                <div>Rank</div>
+                <div>Pull Request</div>
+                <div>Quality</div>
+                <div>Review</div>
+            </div>
+            
+            <div class="pr-row">
+                <div class="pr-rank best">
+                    ⭐#1
+                </div>
+                <div>
+                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17701" target="_blank">#17701</a>
+                    fix(memory-lancedb): add gemini-embedding-001 and baseUrl support
+                    <div class="pr-author">@Phineas1500</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; margin-bottom: 2px;">8.6/10</div>
+                    <div class="score-bar">
+                        <div class="score-fill high"
+                             style="width: 86.0%"></div>
+                    </div>
+                </div>
+                <div>
+                    
+                    <span style="color: var(--green); font-size: 0.8rem;">✓ Consensus</span>
+                    
+                </div>
+            </div>
+            
+            <div class="pr-row">
+                <div class="pr-rank ">
+                    #2
+                </div>
+                <div>
+                    <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17696" target="_blank">#17696</a>
+                    fix(memory-lancedb): add gemini-embedding-001 and baseUrl support
+                    <div class="pr-author">@aldoeliacim</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; margin-bottom: 2px;">8.2/10</div>
+                    <div class="score-bar">
+                        <div class="score-fill high"
+                             style="width: 82.0%"></div>
+                    </div>
+                </div>
+                <div>
+                    
+                    <span style="color: var(--green); font-size: 0.8rem;">✓ Consensus</span>
+                    
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    
+
+    
+
+    <!-- VISION ALIGNMENT -->
+    <h2>🧭 Vision Alignment</h2>
+    <p class="section-desc">How well each PR aligns with the project's stated architecture and goals. Low scores indicate potential drift.</p>
+
+    
+
+    
+    <p style="color: var(--text-muted); padding: 1rem;">All analyzed PRs show acceptable alignment with project vision.</p>
+    
+
+    <!-- TOP QUALITY -->
+    <h2>⭐ Top Quality PRs</h2>
+    <p class="section-desc">Highest-scoring PRs across all quality dimensions.</p>
+
+    
+    <div class="alignment-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/16321" target="_blank">#16321</a>
+                <strong>Fix #12767: suppress HEARTBEAT_OK leakage in Telegram DM replies</strong>
+                <span class="pr-author">@tdjackey</span>
+            </div>
+            <div>
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">8.9/10</span>
+            </div>
+        </div>
+        <div class="consensus-detail">Well-focused bug fix with comprehensive test coverage and clean implementation that properly handles heartbeat token suppression without breaking existing functionality.</div>
+    </div>
+    
+    <div class="alignment-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17371" target="_blank">#17371</a>
+                <strong>fix(heartbeat): always strip HEARTBEAT_OK token from reply text</strong>
+                <span class="pr-author">@BinHPdev</span>
+            </div>
+            <div>
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">8.7/10</span>
+            </div>
+        </div>
+        <div class="consensus-detail">Clean, focused bug fix that correctly removes a paradoxical condition, but lacks specific tests for the fixed scenario.</div>
+    </div>
+    
+    <div class="alignment-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17717" target="_blank">#17717</a>
+                <strong>fix: strip HEARTBEAT_OK tokens anywhere in heartbeat mode</strong>
+                <span class="pr-author">@Marvae</span>
+            </div>
+            <div>
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">8.7/10</span>
+            </div>
+        </div>
+        <div class="consensus-detail">Well-focused bug fix with comprehensive test coverage and clear problem analysis, though includes some unrelated formatting changes that slightly reduce style consistency.</div>
+    </div>
+    
+    <div class="alignment-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17701" target="_blank">#17701</a>
+                <strong>fix(memory-lancedb): add gemini-embedding-001 and baseUrl support</strong>
+                <span class="pr-author">@Phineas1500</span>
+            </div>
+            <div>
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">8.6/10</span>
+            </div>
+        </div>
+        <div class="consensus-detail">Well-structured PR that adds Gemini embedding support with proper configuration handling, good test coverage, and maintains backward compatibility.</div>
+    </div>
+    
+    <div class="alignment-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17696" target="_blank">#17696</a>
+                <strong>fix(memory-lancedb): add gemini-embedding-001 and baseUrl support</strong>
+                <span class="pr-author">@aldoeliacim</span>
+            </div>
+            <div>
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">8.2/10</span>
+            </div>
+        </div>
+        <div class="consensus-detail">Well-implemented feature addition with proper type safety and validation, though it lacks new tests and has minor documentation inconsistencies.</div>
+    </div>
+    
+    <div class="alignment-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17559" target="_blank">#17559</a>
+                <strong>fix: don't rotate auth profile on timeout during active tool use</strong>
+                <span class="pr-author">@jg-noncelogic</span>
+            </div>
+            <div>
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">8.1/10</span>
+            </div>
+        </div>
+        <div class="consensus-detail">Well-focused fix with clear logic and good documentation, but lacks automated tests for the timeout scenario being addressed.</div>
+    </div>
+    
+    <div class="alignment-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/16554" target="_blank">#16554</a>
+                <strong>fix(agent): prevent session deadlock on timeout during tool execution</strong>
+                <span class="pr-author">@mverrilli</span>
+            </div>
+            <div>
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">7.7/10</span>
+            </div>
+        </div>
+        <div class="consensus-detail">Well-structured fix that follows established patterns from previous timeout handling, with good state management and clear timeout classification logic, though test coverage could be more comprehensive.</div>
+    </div>
+    
+
+    <footer>
+        Generated by <strong>claw-review</strong> · Multi-model consensus PR triage
+        <br>2026-02-16 04:09 UTC
+    </footer>
+</body>
+</html>
