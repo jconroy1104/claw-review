@@ -28,11 +28,11 @@ A pluggable platform that queries multiple AI models independently, fuses their 
                                │
               ┌────────────────┼────────────────┐
               ▼                ▼                ▼
-        ┌──────────┐    ┌──────────┐    ┌──────────┐
-        │ GitHub   │    │  Cyber   │    │  Fraud   │
-        │ PR       │    │ Security │    │Detection │
-        │ Adapter  │    │ Adapter  │    │ Adapter  │
-        └────┬─────┘    └──────────┘    └──────────┘
+        ┌──────────┐    
+        │ GitHub   │    
+        │ PR       │    
+        │ Adapter  │   
+        └────┬─────┘    
              │
     ┌────────┼────────┐
     ▼        ▼        ▼
