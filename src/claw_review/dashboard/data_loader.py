@@ -245,23 +245,23 @@ class DataLoader:
         results: list[dict] = []
 
         for qs in self._data.get("quality_scores", []):
-            if q in qs.get("title", "").lower():
+            if q in qs.get("pr_title", qs.get("title", "")).lower():
                 results.append(
                     {
                         "type": "quality",
                         "pr_number": qs.get("pr_number"),
-                        "title": qs.get("title", ""),
+                        "title": qs.get("pr_title", qs.get("title", "")),
                         "data": qs,
                     }
                 )
 
         for als in self._data.get("alignment_scores", []):
-            if q in als.get("title", "").lower():
+            if q in als.get("pr_title", als.get("title", "")).lower():
                 results.append(
                     {
                         "type": "alignment",
                         "pr_number": als.get("pr_number"),
-                        "title": als.get("title", ""),
+                        "title": als.get("pr_title", als.get("title", "")),
                         "data": als,
                     }
                 )

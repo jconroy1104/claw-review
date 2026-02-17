@@ -338,7 +338,7 @@
                 <thead>
                     <tr>
                         <th data-sort="pr_number">PR # <span class="sort-arrow"></span></th>
-                        <th data-sort="title">Title <span class="sort-arrow"></span></th>
+                        <th data-sort="pr_title">Title <span class="sort-arrow"></span></th>
                         <th data-sort="overall_score">Score <span class="sort-arrow"></span></th>
                         <th>Dimensions</th>
                         <th>Review</th>
@@ -354,7 +354,7 @@
                 <thead>
                     <tr>
                         <th data-sort="pr_number">PR # <span class="sort-arrow"></span></th>
-                        <th data-sort="title">Title <span class="sort-arrow"></span></th>
+                        <th data-sort="pr_title">Title <span class="sort-arrow"></span></th>
                         <th data-sort="alignment_score">Score <span class="sort-arrow"></span></th>
                         <th>Recommendation</th>
                         <th data-sort="confidence">Confidence <span class="sort-arrow"></span></th>
@@ -509,7 +509,7 @@
             var tbody = document.getElementById("quality-body");
             var items = qualityScores.slice();
             if (filter) {
-                items = items.filter(function(q) { return (q.title || "").toLowerCase().indexOf(filter) >= 0; });
+                items = items.filter(function(q) { return (q.pr_title || "").toLowerCase().indexOf(filter) >= 0; });
             }
             if (minScore !== null && minScore !== undefined && minScore !== "") {
                 items = items.filter(function(q) { return (q.overall_score || 0) >= parseFloat(minScore); });
@@ -531,7 +531,7 @@
                 var dims = q.dimensions || [];
                 html += '<tr class="expandable" data-idx="q' + idx + '">';
                 html += '<td>#' + (q.pr_number || "?") + '</td>';
-                html += '<td>' + escapeHtml(q.title || "") + '</td>';
+                html += '<td>' + escapeHtml(q.pr_title || "") + '</td>';
                 html += '<td><span class="' + scoreColor(sc) + '" style="font-weight:700">' + sc.toFixed(1) + '</span>';
                 html += '<div class="score-bar"><div class="score-fill ' + scoreClass(sc) + '" style="width:' + (sc*10) + '%"></div></div></td>';
                 html += '<td>' + dims.length + ' dims</td>';
@@ -566,7 +566,7 @@
             var tbody = document.getElementById("alignment-body");
             var items = alignmentScores.slice();
             if (filter) {
-                items = items.filter(function(a) { return (a.title || "").toLowerCase().indexOf(filter) >= 0; });
+                items = items.filter(function(a) { return (a.pr_title || "").toLowerCase().indexOf(filter) >= 0; });
             }
             if (recFilter) {
                 items = items.filter(function(a) { return (a.recommendation || "").toUpperCase() === recFilter; });
@@ -584,7 +584,7 @@
                 var sc = a.alignment_score || 0;
                 html += '<tr class="expandable" data-idx="a' + idx + '">';
                 html += '<td>#' + (a.pr_number || "?") + '</td>';
-                html += '<td>' + escapeHtml(a.title || "") + '</td>';
+                html += '<td>' + escapeHtml(a.pr_title || "") + '</td>';
                 html += '<td><span class="' + scoreColor(sc) + '" style="font-weight:700">' + sc.toFixed(1) + '</span></td>';
                 html += '<td>' + recBadge(a.recommendation) + '</td>';
                 html += '<td>' + ((a.confidence || 0) * 100).toFixed(0) + '%</td>';
