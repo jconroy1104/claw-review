@@ -131,13 +131,13 @@
 <body>
     <h1>🦞 ClawReview Report</h1>
     <div class="meta">
-        <strong>openclaw/openclaw</strong> · 3434 open PRs analyzed · 2026-02-17 03:49 UTC
-        <br>Models: meta-llama/llama-3.1-70b-instruct, mistralai/mistral-large-latest, google/gemini-2.0-flash-001
+        <strong>openclaw/openclaw</strong> · 3429 open PRs analyzed · 2026-02-23 18:17 UTC
+        <br>Models: anthropic/claude-sonnet-4, google/gemini-2.0-flash-001, meta-llama/llama-3.1-70b-instruct, mistralai/mistral-large-latest, openai/gpt-4o
     </div>
 
     <div class="stats">
         <div class="stat-card">
-            <div class="number">3434</div>
+            <div class="number">3429</div>
             <div class="label">PRs Analyzed</div>
         </div>
         <div class="stat-card">
@@ -149,7 +149,7 @@
             <div class="label">Duplicate PRs</div>
         </div>
         <div class="stat-card">
-            <div class="number">54</div>
+            <div class="number">79</div>
             <div class="label">Vision Drift Flags</div>
         </div>
     </div>
@@ -22227,26 +22227,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">1.0/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">1.3/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR introduces a fork of OpenClaw, rebranding it as REALLYopenClaw, which diverges from the project's vision and goals.</li>
+            <li>Rebrands the project as 'REALLYopenClaw' which conflicts with the established OpenClaw identity and branding</li>
             
-            <li>The PR disables the global gateway lock by default, allowing multiple gateway instances to run on the same machine, which may lead to conflicts and instability.</li>
+            <li>Changes fundamental architecture by disabling the gateway lock by default, which may compromise the 'personal, single-user assistant' vision stated in README</li>
             
-            <li>The PR changes the README to describe the fork and its new behavior, which may confuse users and create inconsistencies with the rest of the project.</li>
+            <li>Introduces fork-specific installation instructions that diverge from the documented npm package distribution model</li>
             
-            <li>This PR rebrands the project to 'REALLYopenClaw', which directly conflicts with the project's established identity and branding as 'OpenClaw'.</li>
+            <li>Uses inflammatory language ('THE GOOD TWIN', 'JAILBREAK') that conflicts with the project's professional tone</li>
             
-            <li>The PR disables the global gateway lock by default, which contradicts the existing architecture designed to ensure a single gateway instance.</li>
+            <li>Removes the single-gateway guarantee which appears to be an intentional architectural decision for a personal assistant</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR introduces significant changes that diverge from the project's vision and goals, and may lead to conflicts and instability.</div>
+        <div class="consensus-detail">This PR fundamentally rebrands the project and changes core architectural behavior (gateway locking) in ways that directly conflict with OpenClaw's vision as a personal, single-user assistant.</div>
         
     </div>
     
@@ -22259,24 +22259,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">1.5/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">1.7/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR changes the print statement from 'Hello' to 'Goodbye' without any clear justification or relation to the project's goals or architecture.</li>
+            <li>Removes 549 lines from README.md while only adding 1 line, suggesting massive deletion of project documentation</li>
             
-            <li>The PR does not follow the project's contributing guidelines, as it does not provide a clear summary of the problem and fix, and does not include any evidence or human verification.</li>
+            <li>Changes a print statement from 'Hello' to 'Goodbye' which appears unrelated to OpenClaw's core functionality as a personal AI assistant</li>
             
-            <li>The PR does not seem to address any specific issue or need in the project, and appears to be a trivial change.</li>
+            <li>PR template is completely unfilled despite being required - no problem description, scope, security impact, or verification provided</li>
             
-            <li>The PR description is incomplete, failing to describe the problem, fix, or why it matters. The change itself is to update a print statement from 'Hello' to 'Goodbye' in the README, which is a significant drift from the project's goals of building a personal AI assistant as outlined in the README.md and CONTRIBUTING.md.</li>
+            <li>Massive file changes (+1/-549) with trivial description suggests either accidental changes or potential malicious intent</li>
+            
+            <li>No clear connection to OpenClaw's stated goals of being a personal AI assistant with channel integrations</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR does not align with the project's goals or architecture, and does not follow the contributing guidelines.</div>
+        <div class="consensus-detail">This PR appears to delete most of the README documentation while making an unexplained trivial change, with no proper justification or completed PR template.</div>
         
     </div>
     
@@ -22289,26 +22291,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">1.5/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">1.3/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR transforms the repository into a new project (SotyBot) with a different architecture and technology stack (Python/FastAPI) that is not aligned with the original OpenClaw project's vision and goals.</li>
+            <li>Completely replaces OpenClaw with a different project called 'SotyBot'</li>
             
-            <li>The PR introduces a new set of features and components that are not mentioned in the OpenClaw project's documentation or roadmap.</li>
+            <li>Changes from Node.js/TypeScript to Python/FastAPI architecture</li>
             
-            <li>The PR does not follow the OpenClaw project's contributing guidelines, such as testing and code review processes.</li>
+            <li>Removes all existing OpenClaw functionality including channels (WhatsApp, Telegram, Slack, Discord, etc.)</li>
             
-            <li>This PR completely repurposes the project, changing the core language from NodeJS to Python, and shifting the focus from a personal AI assistant to a domain-agnostic agent runtime, which is a significant departure from the project's stated goals in the README.</li>
+            <li>Eliminates the personal AI assistant vision in favor of a generic 'Open Agent Engine'</li>
             
-            <li>The README explicitly defines OpenClaw as a personal AI assistant that integrates with various messaging channels, while this PR introduces 'SotyBot,' an open agent engine with a different architecture and feature set.</li>
+            <li>Removes established branding, documentation, and project identity</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR is not aligned with the OpenClaw project's vision and goals, and introduces significant changes that are not documented or discussed in the project's roadmap or contributing guidelines.</div>
+        <div class="consensus-detail">This PR completely replaces the OpenClaw project with an entirely different project (SotyBot), fundamentally conflicting with the established vision of a personal AI assistant and breaking all existing functionality.</div>
         
     </div>
     
@@ -22321,26 +22323,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">1.5/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">1.3/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>Embedded auth token in a script</li>
+            <li>Contains embedded authentication tokens in agente.txt which violates security practices</li>
             
-            <li>Unconditional debug fetch() calls in the gateway message handler</li>
+            <li>Adds debug telemetry fetch() calls in production gateway message handler hot path</li>
             
-            <li>Command-policy enforcement bypasses</li>
+            <li>Includes keystroke injection Arduino code (openclaw_ducky.ino) unrelated to AI assistant functionality</li>
             
-            <li>Adding keystroke-injection tooling and debug logs into the repo</li>
+            <li>Bypasses command enforcement security policies with 'temporary bypass' comments</li>
             
-            <li>Changes not aligned with the project's current focus and roadmap</li>
+            <li>Commits IDE debug logs (.cursor/debug.log) containing sensitive session data</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR contains high-impact security issues and drifts significantly from the project's vision and current focus.</div>
+        <div class="consensus-detail">This PR contains multiple security vulnerabilities including committed secrets, debug hooks in production code, and security policy bypasses that fundamentally conflict with OpenClaw's vision as a secure personal AI assistant.</div>
         
     </div>
     
@@ -22353,26 +22355,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">1.5/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">1.7/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>Incorrectly treats OpenClaw as a Python project instead of a Node.js/TypeScript application</li>
+            <li>Fundamentally misunderstands OpenClaw as a Python project when it's Node.js/TypeScript</li>
             
-            <li>References non-existent requirements.txt and openclaw.app Python module</li>
+            <li>References non-existent Python files (requirements.txt, openclaw.app module)</li>
             
-            <li>Includes Python 3.11 in dependencies despite OpenClaw being a Node.js project</li>
+            <li>Incorrect start command - should be 'node openclaw.mjs gateway' not 'python3 -m openclaw.app'</li>
             
-            <li>Incorrect start command (python3 -m openclaw.app instead of node openclaw.mjs gateway --allow-unconfigured)</li>
+            <li>Skips critical build steps (pnpm build, pnpm ui:build) that are required per README</li>
             
-            <li>Missing required build steps (pnpm build and pnpm ui:build)</li>
+            <li>Uses --no-frozen-lockfile instead of --frozen-lockfile which violates project conventions</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR introduces significant drift from the project's architecture and conventions, and would break deployment if merged.</div>
+        <div class="consensus-detail">This PR is based on a fundamental misunderstanding of the project architecture and would break deployment completely by treating a Node.js application as a Python project.</div>
         
     </div>
     
@@ -22385,26 +22387,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.0/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.3/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>Removes explicit non-exfiltration language</li>
+            <li>Removes critical safety constraint 'Don't exfiltrate private data. Ever.' which conflicts with OpenClaw's personal AI assistant vision</li>
             
-            <li>Encourages broader access to user data</li>
+            <li>Weakens 'ask first' boundaries by removing 'Anything that leaves the machine' and 'Anything you're uncertain about'</li>
             
-            <li>Loosens 'ask first' triggers</li>
+            <li>Adds concerning guidance to 'access user's data as much as possible' which could violate privacy expectations</li>
             
-            <li>Changes group-chat behavior guidance to allow sharing of user's stuff without consent</li>
+            <li>Changes group chat behavior from 'not their proxy' to 'you are their proxy' which fundamentally alters the assistant's role</li>
             
-            <li>Adds instructions to access and modify user's data without explicit permission</li>
+            <li>Removes reaction moderation guidance ('One reaction per message max') that helps maintain appropriate social behavior</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR introduces significant changes to the safety and privacy guidance in the AGENTS.md template, which may compromise the security and trust of the OpenClaw project.</div>
+        <div class="consensus-detail">This PR significantly weakens safety guardrails and privacy protections in a template that directly controls AI assistant behavior, fundamentally conflicting with OpenClaw's vision of a trustworthy personal assistant.</div>
         
     </div>
     
@@ -22417,24 +22419,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.0/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">1.0/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>No description provided for the PR</li>
+            <li>PR has no description explaining purpose or changes</li>
             
-            <li>No labels or tags assigned to the PR</li>
+            <li>Shows +0/-0 changes across 0 files indicating no actual code changes</li>
             
-            <li>No changes or files modified in the PR</li>
+            <li>Violates contributing guidelines requiring description of 'what & why'</li>
             
-            <li>The PR has no description, changes zero files, and provides no context, failing to meet the contribution guidelines outlined in CONTRIBUTING.md.</li>
+            <li>Does not follow the project's expectation for focused PRs with clear purpose</li>
+            
+            <li>Appears to be an empty or malformed PR that adds no value</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR lacks essential information, such as a description, labels, and actual changes, making it difficult to evaluate its alignment with the project vision and goals.</div>
+        <div class="consensus-detail">This PR contains no actual changes and lacks any description, violating the project's contributing guidelines that require explaining what and why for each PR.</div>
         
     </div>
     
@@ -22453,20 +22457,20 @@
         
         <ul class="drift-list">
             
-            <li>The PR changes the Fly.io deployment configuration in a way that breaks deployments and persistence, which is not aligned with the project's documented deployment requirements.</li>
+            <li>Removes critical OpenClaw-specific configuration including NODE_ENV=production, OPENCLAW_STATE_DIR=/data, and gateway process command</li>
             
-            <li>The PR removes environment variables and persistent volume mounts that are necessary for the project's functionality.</li>
+            <li>Changes service port from 3000 to 8080 breaking documented deployment guide</li>
             
-            <li>The PR changes the service port to 8080, which is not the intended port for the gateway process.</li>
+            <li>Removes persistent /data volume mount breaking state persistence</li>
             
-            <li>The PR replaces the existing Fly.io deployment configuration with a generated one, which changes the app name and service port.</li>
+            <li>Removes Dockerfile build configuration</li>
             
-            <li>It removes the repository's documented Fly settings, including the Dockerfile build, environment variables, explicit gateway process command, and persistent /data volume mount, conflicting with the documented Fly deployment requirements (port/process/env/mount) in `docs/install/fly.md` and the private template (`fly.private.toml`).</li>
+            <li>Changes app name from 'openclaw' to generic 'app-muddy-snow-1764'</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR introduces high-impact configuration errors that would break deployments and persistence, and is not aligned with the project's documented deployment requirements.</div>
+        <div class="consensus-detail">This PR replaces working OpenClaw Fly.io configuration with a generic template that removes essential deployment settings and breaks documented functionality.</div>
         
     </div>
     
@@ -22479,26 +22483,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.0/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.3/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>Introduces a decentralized infrastructure without addressing security concerns</li>
+            <li>Introduces P2P/decentralized architecture that conflicts with OpenClaw's stated vision as a 'personal AI assistant you run on your own devices'</li>
             
-            <li>Requires users to share their GitHub tokens with an external Gist controlled by unknown parties</li>
+            <li>Adds external dependencies and infrastructure (BitTorrent, GitHub Gists) that contradict the local, self-contained nature described in the README</li>
             
-            <li>Lacks integration with OpenClaw's plugin system</li>
+            <li>Creates security risks by requiring users to share GitHub tokens with external parties</li>
             
-            <li>Has critical race conditions in concurrent write operations</li>
+            <li>Implements non-functional code with missing dependencies (axios) and unimplemented tool references</li>
             
-            <li>References tools that are never implemented</li>
+            <li>Introduces 'collective AGI' concepts that diverge from OpenClaw's focus on personal assistance</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR introduces significant security concerns, lacks proper integration with the existing system, and has critical implementation issues, making it unsuitable for merging.</div>
+        <div class="consensus-detail">This PR fundamentally conflicts with OpenClaw's vision as a personal, local AI assistant by introducing decentralized infrastructure and collective intelligence features that contradict the project's core architecture and security model.</div>
         
     </div>
     
@@ -22543,26 +22547,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.5/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.7/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>Introduces duplicate import errors</li>
+            <li>Introduces duplicate imports that will prevent compilation, contradicting the project's emphasis on stability</li>
             
-            <li>Uses incorrect function signature for runCommandWithTimeout</li>
+            <li>Uses incorrect function signature for runCommandWithTimeout that will cause runtime crashes</li>
             
-            <li>Fails to update test file to reflect new implementation</li>
+            <li>Creates a mismatch between test mocks and production code by removing runDaemonRestart without updating tests</li>
             
-            <li>Lacks proper testing and verification of changes</li>
+            <li>Despite claiming to fix syntax errors, actually introduces new blocking compilation and runtime issues</li>
             
-            <li>Introduces compilation errors due to duplicate imports.</li>
+            <li>Introduces new compilation and runtime errors, conflicting with the project's stability goals.</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR attempts to fix a specific issue, it introduces new errors and lacks proper testing, requiring a thorough review and revision before merging.</div>
+        <div class="consensus-detail">This PR introduces compilation-breaking duplicate imports and runtime-crashing function calls, directly conflicting with the project's current stability focus and basic code quality standards.</div>
         
     </div>
     
@@ -22574,27 +22578,27 @@
                 <span class="pr-author">@zzjj7000</span>
             </div>
             <div>
-                <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.5/10</span>
+                <span class="badge badge-merge">MERGE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.3/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>Introduces several new behavioral features unrelated to shell execution, including a SmartRouter system, new retry behavior, and a context-optimizer</li>
+            <li>PR description mentions only PowerShell changes but includes unrelated code style changes</li>
             
-            <li>Changes are not explicitly gated or documented, and may introduce unexpected behavior</li>
+            <li>Minor style changes (early returns) weren't mentioned in the description</li>
             
-            <li>New network and cache behavior without explicit feature gating</li>
+            <li>Could have been more explicit about the security implications of ExecutionPolicy Bypass</li>
             
-            <li>Hard-coded paths in .bat scripts and pnpm→npx build change may cause issues on Windows</li>
+            <li>The PR introduces several unrelated behavioral changes such as a SmartRouter system, smart rate limit retry behavior, and a context-optimizer without explicit feature gating.</li>
             
-            <li>The PR includes unrelated changes such as a SmartRouter system, smart rate limit retry behavior, and a context-optimizer, which are not directly related to the stated goal of improving PowerShell execution reliability.</li>
+            <li>These changes introduce new network and cache behavior, which could affect the stability and performance of the system, diverging from the current focus on stability and performance optimization.</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR improves PowerShell execution reliability, it introduces several unrelated changes that may cause issues and drift from the project's vision, requiring further discussion and refinement</div>
+        <div class="consensus-detail">This PR directly addresses Windows compatibility issues that align with the project's cross-platform goals and stability focus, with the ExecutionPolicy Bypass being a standard solution for PowerShell execution problems.</div>
         
     </div>
     
@@ -22607,26 +22611,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.5/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.0/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR introduces a new feature that is not mentioned in the project's vision or roadmap</li>
+            <li>Adds manufacturing line balancing visualization completely unrelated to personal AI assistant functionality</li>
             
-            <li>The feature is not aligned with the project's focus on stability, UX, skills, or performance</li>
+            <li>No connection to OpenClaw's core purpose of AI chat/messaging across channels</li>
             
-            <li>The PR does not follow the project's guidelines for contributing new features, which require starting a GitHub Discussion or asking in Discord first</li>
+            <li>Introduces domain-specific industrial engineering content that conflicts with the project's AI assistant vision</li>
             
-            <li>This PR adds a large, self-contained HTML visualization for cable assembly line balancing, which is outside the scope of a personal AI assistant as defined in the README.</li>
+            <li>Large standalone HTML file doesn't follow the project's modular architecture patterns</li>
             
-            <li>The PR doesn't seem to align with the current focus on stability, UX improvements for onboarding, or skills for ClawHub as outlined in CONTRIBUTING.md.</li>
+            <li>No integration with OpenClaw's gateway, channels, models, or agent systems</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR introduces a significant new feature that is not aligned with the project's current focus or roadmap, and does not follow the project's guidelines for contributing new features.</div>
+        <div class="consensus-detail">This PR adds manufacturing line balancing functionality that has no relationship to OpenClaw's vision as a personal AI assistant for messaging channels.</div>
         
     </div>
     
@@ -22639,26 +22643,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.5/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.0/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR does not implement the described behavior change, instead only adding a new markdown file restating the issue and suggestions without any code changes.</li>
+            <li>PR only adds documentation without implementing the actual fixes described</li>
             
-            <li>The PR title contains a typo ('messag') and does not accurately reflect the changes made.</li>
+            <li>No code changes to improve validation error messages or enforce authentication</li>
             
-            <li>The PR does not follow the project's guidelines for contributing, specifically the requirement to test locally and run tests before submitting a PR.</li>
+            <li>Creates a contribution tracking file instead of solving the underlying technical issue</li>
             
-            <li>The PR only adds a markdown file summarizing the issue, but doesn't implement any code changes to address the issue, which is to improve validation messages or enforce authentication.</li>
+            <li>PR title contains a typo ('messag' instead of 'message')</li>
             
-            <li>The PR title contains a typo ('messag').</li>
+            <li>Does not follow the project's expectation of focused, implementable changes</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR does not meet the project's contribution guidelines and does not implement the described behavior change, requiring further discussion and clarification before it can be considered for merge.</div>
+        <div class="consensus-detail">This PR documents an issue analysis but implements no actual fixes, failing to deliver the validation improvements and security enhancements it describes.</div>
         
     </div>
     
@@ -22671,26 +22675,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.5/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.0/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR introduces a critical issue with the `@openclaw/core-memories` package, which has no implementation and will cause runtime failures.</li>
+            <li>Critical runtime failure - core-memories package has no implementation despite being integrated into auto-reply flow</li>
             
-            <li>The PR adds extension-only dependencies to the root package.json, violating the project guideline (AGENTS.md:11-12).</li>
+            <li>Violates dependency management guidelines by moving extension-only dependencies to root package.json</li>
             
-            <li>The PR's changes to the labeler workflow and GitHub App token usage may not align with the project's security guidelines.</li>
+            <li>Introduces a major feature without prior discussion as recommended in CONTRIBUTING.md</li>
             
-            <li>Introduces a `@openclaw/core-memories` package with only a package.json, leading to runtime errors due to missing implementation, violating the project's stability goals.</li>
+            <li>Removes GitHub App token dependency without clear justification</li>
             
-            <li>Adds extension-only dependencies to the root package.json, conflicting with the project's architectural guidelines (AGENTS.md:11-12) that plugin-specific dependencies should reside within the extension's package.json.</li>
+            <li>Large scope change (+2398/-52 lines) that should have been broken into focused PRs</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR has a critical issue and introduces drift from the project's guidelines, requiring discussion and revision before it can be considered for merge.</div>
+        <div class="consensus-detail">The PR introduces a critical runtime failure by integrating an unimplemented core-memories package and violates established dependency management guidelines.</div>
         
     </div>
     
@@ -22703,26 +22707,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.5/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.0/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR introduces a full new flake with unrelated inputs and modules, which is not aligned with the project's current architecture.</li>
+            <li>Introduces a full flake.nix with demo-style description and unused inputs (process-compose, services-flake, northwind) that don't relate to OpenClaw</li>
             
-            <li>The shellHook has persistent side effects and runs installs unconditionally on every shell entry, which can break offline/restricted environments and unexpectedly mutate the repo.</li>
+            <li>shellHook persistently modifies user npm config with 'npm set registry' which affects global state</li>
             
-            <li>The PR does not follow the project's guidelines for contributing, as it does not provide a clear description of the changes and does not include tests.</li>
+            <li>Runs 'pnpm install' unconditionally on every shell entry, causing network calls and potential repo mutations</li>
             
-            <li>Introduces a full flake.nix file, which is a significant change not discussed or planned.</li>
+            <li>The scope is much broader than described - creates entire development environment rather than just adding pnpm install</li>
             
-            <li>The flake.nix includes unrelated inputs (process-compose, services-flake, northwind) and a demo-style description, deviating from the project's focus.</li>
+            <li>Includes commented-out PostgreSQL services configuration unrelated to OpenClaw's core functionality</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR requires further discussion to ensure that the changes align with the project's vision and architecture, and to address the concerns around the shellHook's behavior and the introduction of new inputs and modules.</div>
+        <div class="consensus-detail">While the intent to improve developer experience aligns with project goals, the implementation introduces significant scope creep with persistent side effects and unused infrastructure that conflicts with the focused, personal AI assistant vision.</div>
         
     </div>
     
@@ -22735,26 +22739,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.5/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.7/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR introduces a security vulnerability that could allow path traversal outside the intended OpenClaw directories</li>
+            <li>Introduces a critical security vulnerability by using insufficient path validation (substring matching instead of proper prefix checking)</li>
             
-            <li>The path validation logic is too permissive and could allow access to arbitrary files on the system</li>
+            <li>Could allow path traversal attacks to access arbitrary files outside OpenClaw directories</li>
             
-            <li>The implementation does not validate paths against the actual state directory root using proper path prefix checking</li>
+            <li>The validation logic allows any path containing 'agents' and ending with 'sessions', which is too permissive</li>
             
-            <li>The PR introduces a security vulnerability by allowing access to files outside the intended OpenClaw state directory, which conflicts with the project's security goals.</li>
+            <li>No discussion or architectural review mentioned for this security-sensitive change</li>
             
-            <li>The path validation logic is too permissive and could allow malicious paths, as highlighted by the Greptile analysis.</li>
+            <li>Conflicts with security best practices that should be core to a personal AI assistant</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR introduces a security vulnerability and does not align with the project's security goals, requiring further discussion and revision before merging.</div>
+        <div class="consensus-detail">This PR introduces a serious security vulnerability that could allow unauthorized file access, which directly conflicts with the security requirements of a personal AI assistant.</div>
         
     </div>
     
@@ -22767,26 +22771,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.5/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.7/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR transforms OpenClaw into a local-first fork, which may not align with the project's original vision</li>
+            <li>Fundamentally changes the project identity from 'OpenClaw' to 'openclaw-local' fork</li>
             
-            <li>The changes preserve all cloud provider functionality, but make local operation the default path, which may not be in line with the project's goals</li>
+            <li>Contradicts the documented focus on cloud providers (Anthropic Pro/Max + Opus 4.6 strongly recommended)</li>
             
-            <li>The PR includes a significant amount of changes, including a new setup script and example config, which may introduce complexity and drift from the project's original direction</li>
+            <li>Changes default behavior from documented Anthropic/OpenAI OAuth setup to local Ollama</li>
             
-            <li>This PR significantly alters the project's direction by prioritizing local Ollama inference over cloud providers like Anthropic and OpenAI, which are explicitly mentioned and recommended in the README.md. The README emphasizes subscriptions to Anthropic and OpenAI, suggesting a focus on cloud-based AI assistants, while this PR shifts the focus to local models.</li>
+            <li>Removes substantial CI infrastructure that ensures cross-platform compatibility</li>
             
-            <li>The PR introduces substantial changes across many files, including documentation, CI workflows, and default configurations, indicating a major architectural shift that wasn't discussed beforehand, violating the CONTRIBUTING.md guidelines for new features or architecture changes.</li>
+            <li>Alters funding and branding elements without maintainer consensus</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR includes some aligned aspects, such as comprehensive test coverage and updated documentation, the significant changes and drift from the project's original vision and goals warrant further discussion and review.</div>
+        <div class="consensus-detail">This PR creates a fundamental fork that changes the project's identity, default behavior, and recommended setup path, which conflicts with the documented vision of a premium cloud-based personal assistant.</div>
         
     </div>
     
@@ -22799,58 +22803,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.0/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.7/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR description and title are completely unrelated to the actual change, which may indicate a lack of understanding of the project's goals or a misleading representation of the changes.</li>
+            <li>PR title and description are completely unrelated to the actual code changes</li>
             
-            <li>The change introduces a new dependency on an Express HTTP server, which may not be aligned with the project's architecture or vision.</li>
+            <li>Claims to fix Discord guild channel detection but actually changes browser control server wiring</li>
             
-            <li>The PR does not follow the project's guidelines for contributing, specifically the requirement for a clear and concise description of the changes.</li>
+            <li>References non-existent issue #17590 and discusses Discord API changes that aren't in the diff</li>
             
-            <li>The PR description is completely unrelated to the actual code changes, which violates the 'Describe what & why' guideline in CONTRIBUTING.md.</li>
+            <li>Misleading documentation will pollute git history and confuse future maintainers</li>
             
-            <li>The PR claims to fix Discord guild channel detection, but the code changes are in `src/gateway/server-browser.ts` and relate to browser control server wiring, indicating a significant disconnect between the stated purpose and the actual implementation.</li>
-            
-        </ul>
-        
-        
-        <div class="consensus-detail">The PR requires further discussion to clarify the changes and ensure they align with the project's vision and architecture.</div>
-        
-    </div>
-    
-    <div class="alignment-card flagged">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/7030" target="_blank">#7030</a>
-                <strong>feat: add line balancing animation for Double End M12 Cable Assembly</strong>
-                <span class="pr-author">@ceasarcapuno</span>
-            </div>
-            <div>
-                <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.0/10</span>
-            </div>
-        </div>
-        
-        <ul class="drift-list">
-            
-            <li>The PR introduces a new feature that is not mentioned in the project's vision or roadmap</li>
-            
-            <li>The feature is not related to the project's main goal of creating a personal AI assistant</li>
-            
-            <li>The PR does not follow the project's guidelines for contributing new features, which requires starting a GitHub Discussion or asking in Discord first</li>
-            
-            <li>This PR adds a very specific visualization tool that doesn't seem to align with the core goal of OpenClaw as a personal AI assistant.</li>
-            
-            <li>The PR description and Greptile summary suggest a self-contained HTML page, which doesn't integrate with the existing OpenClaw architecture or any documented need.</li>
+            <li>Violates contribution guidelines that emphasize 'Describe what & why' accurately</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR introduces a significant new feature that is not aligned with the project's vision or roadmap, and does not follow the project's guidelines for contributing new features.</div>
+        <div class="consensus-detail">While the code change itself appears technically sound, the completely misleading PR description violates the project's emphasis on clear communication and will create confusion in the git history.</div>
         
     </div>
     
@@ -22869,52 +22841,20 @@
         
         <ul class="drift-list">
             
-            <li>The PR introduces language and framing that promotes 'unrestricted' execution and offensive security behavior, which may conflict with OpenClaw's safety posture</li>
+            <li>Promotes 'UNRESTRICTED_AUTHORIZED_ASSESSMENT' and 'unrestricted execution' which conflicts with responsible AI assistant principles</li>
             
-            <li>The new skills and templates may lead to unsafe usage or policy violations if consumed by the product or shared publicly</li>
+            <li>Explicitly encourages offensive security tools and 'black-hat aesthetic' without proper safety guardrails</li>
             
-            <li>The PR does not explicitly address the project's current focus on stability, UX, and performance</li>
+            <li>SOUL template includes directive to 'never apologize' and 'never disclaimer' which undermines safety mechanisms</li>
             
-            <li>The PR introduces a 'Cyber-Warrior' skill set that includes offensive security tools like nmap, dig, and curl, which could be misused if not handled carefully, potentially conflicting with OpenClaw's safety posture.</li>
+            <li>Cyber-warrior skill promotes network scanning and vulnerability assessment tools that could enable malicious use</li>
             
-            <li>The 'V-Infinite' persona promotes 'unrestricted execution' and a 'hacker-chic' persona, which may not align with the project's goals and could lead to unsafe behavior.</li>
-            
-        </ul>
-        
-        
-        <div class="consensus-detail">The PR raises significant concerns about safety and policy, and requires further discussion and review to ensure alignment with the project's goals and values.</div>
-        
-    </div>
-    
-    <div class="alignment-card flagged">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/7206" target="_blank">#7206</a>
-                <strong>feat: add V-Infinite elite assistant persona and cyber-warrior skill set</strong>
-                <span class="pr-author">@oki3505F</span>
-            </div>
-            <div>
-                <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.0/10</span>
-            </div>
-        </div>
-        
-        <ul class="drift-list">
-            
-            <li>The new skills and templates introduced in the PR promote 'unrestricted' execution and offensive security behavior, which could lead to unsafe usage or policy violations if consumed by the product or shared publicly.</li>
-            
-            <li>The language and tone used in the new templates and skills may not align with OpenClaw's safety posture and could lead to conflicts with the project's goals and values.</li>
-            
-            <li>The PR does not seem to follow the recommended guidelines for contributing to OpenClaw, such as starting a GitHub Discussion or asking in Discord before implementing new features.</li>
-            
-            <li>The PR introduces a 'Cyber-Warrior' skill set that includes tools like nmap, dig, and curl, which could be misused if not handled carefully, potentially conflicting with the project's safety posture.</li>
-            
-            <li>The 'V-Infinite' persona promotes 'unrestricted execution' and 'offensive security usage,' which may lead to unsafe behavior and policy violations.</li>
+            <li>The 'sassy, sweary, hacker-chic' persona conflicts with OpenClaw's professional assistant positioning</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR introduces new features that could be beneficial, but it also raises significant concerns about safety and alignment with the project's goals and values, requiring further discussion and review.</div>
+        <div class="consensus-detail">This PR introduces content that explicitly promotes unrestricted AI behavior and offensive security tools without proper safety considerations, which fundamentally conflicts with responsible AI assistant development principles.</div>
         
     </div>
     
@@ -22927,26 +22867,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.0/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.7/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR does not address a documented need or issue in the project's vision or architecture</li>
+            <li>Only adds documentation without fixing the actual reported bug</li>
             
-            <li>The PR introduces a new file (AGENT_CHANGE.md) that does not seem to be part of the project's standard documentation or code structure</li>
+            <li>Proposes modifying pnpm-lock.yaml which should be auto-generated, not manually edited</li>
             
-            <li>The PR's changes do not appear to be related to the project's current focus or roadmap (stability, UX, skills, performance)</li>
+            <li>Suggests adding '@openclaw/mattermost' package that doesn't appear to exist in the project</li>
             
-            <li>The PR only adds an analysis of the bug, but does not fix it, which is not a useful contribution.</li>
+            <li>Makes assumptions about 'zop' being a typo for 'zod' without evidence</li>
             
-            <li>The PR suggests modifying the pnpm-lock.yaml file directly, which is generally discouraged as it should be managed by pnpm.</li>
+            <li>Doesn't follow the project's focus on stability and fixing edge cases in channel connections</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR's changes seem unrelated to the project's current focus and do not address a documented need, requiring further discussion to understand its relevance and potential impact on the project.</div>
+        <div class="consensus-detail">This PR only documents an analysis without implementing any actual fixes, proposes incorrect solutions like manually editing lockfiles, and introduces undocumented file formats.</div>
         
     </div>
     
@@ -22959,58 +22899,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.0/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.7/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR does not address the reported bug and does not implement a fix or tests for the connection error described in Issue #9274</li>
+            <li>Does not implement an actual bug fix despite claiming to address a connection error</li>
             
-            <li>The change is documentation-only and does not align with the project's goal of fixing the connection error issue</li>
+            <li>Adds documentation-only content that doesn't solve the reported technical issue</li>
             
-            <li>The PR does not follow the project's guidelines for contributing code, as it does not contain a fix or tests for the issue</li>
+            <li>Creates a markdown file in contributions/ directory without clear precedent for this pattern</li>
             
-            <li>This PR adds a markdown file with debugging suggestions but does not implement a fix, which is a mild drift from the project's focus on stability and UX improvements as outlined in the CONTRIBUTING.md file. The PR description indicates an attempt to address issue #9274, but the changes only provide hypotheses and debugging steps, not a solution.</li>
+            <li>Provides only general debugging suggestions rather than OpenClaw-specific solutions</li>
             
-            <li>The CONTRIBUTING.md states 'Bugs & small fixes → Open a PR!', but this PR doesn't contain a fix.</li>
-            
-        </ul>
-        
-        
-        <div class="consensus-detail">The PR does not align with the project's goals and guidelines, and does not provide a fix or tests for the reported bug, so it requires further discussion and clarification before it can be merged.</div>
-        
-    </div>
-    
-    <div class="alignment-card flagged">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/9317" target="_blank">#9317</a>
-                <strong>[Swarm] [Bug]: Connection error on Intel MacBook Pro persi</strong>
-                <span class="pr-author">@swarmagents</span>
-            </div>
-            <div>
-                <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.0/10</span>
-            </div>
-        </div>
-        
-        <ul class="drift-list">
-            
-            <li>The PR does not contain an actual fix or implementation, only a markdown note with general hypotheses and debugging suggestions.</li>
-            
-            <li>The change is documentation-only and does not address the reported bug.</li>
-            
-            <li>The PR does not follow the recommended approach of starting a GitHub Discussion or asking in Discord before submitting a PR for new features or architecture changes.</li>
-            
-            <li>This PR adds a markdown file with debugging suggestions but does not implement a fix, which is a mild drift from the project's focus on stability and UX improvements as outlined in CONTRIBUTING.md.</li>
-            
-            <li>The PR description suggests it addresses issue #9274, but the Greptile analysis indicates that no code changes were made, so it doesn't actually fix the bug.</li>
+            <li>Does not follow the project's emphasis on testing and functional fixes</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR does not align with the project's vision and guidelines, and further discussion is needed to determine the best course of action to address the reported bug.</div>
+        <div class="consensus-detail">This PR claims to fix a bug but only adds general debugging notes without implementing any actual solution to the Intel Mac connection error.</div>
         
     </div>
     
@@ -23023,26 +22931,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.0/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.3/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR introduces a significant amount of new code and complexity, which may not be aligned with the project's current focus on stability and UX</li>
+            <li>Massive feature addition (2161 lines) with no prior discussion or GitHub issue</li>
             
-            <li>The simulation is not explicitly mentioned in the project's roadmap or current focus areas</li>
+            <li>Introduces complex AI agent simulation system completely unrelated to OpenClaw's core mission as a personal AI assistant</li>
             
-            <li>The PR does not include any information on how the simulation will be integrated with the existing codebase or how it will be tested</li>
+            <li>Creates entirely new domain (bot society simulation) that conflicts with the project's focus on messaging channels and personal assistance</li>
             
-            <li>This PR introduces a large simulation feature that wasn't discussed in a GitHub Discussion or Discord first, violating the contribution guidelines.</li>
+            <li>Adds experimental/research-oriented features that don't serve the stated goal of being a 'personal, single-user assistant'</li>
             
-            <li>The PR adds a large amount of code (2161 lines) which may not align with the current focus on stability, UX, skills, and performance as outlined in CONTRIBUTING.md.</li>
+            <li>No integration with existing OpenClaw architecture (channels, skills, models, gateway)</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR is well-structured and aligns with the project's goals, it introduces significant complexity and is not explicitly mentioned in the project's roadmap, requiring further discussion and review.</div>
+        <div class="consensus-detail">This PR introduces a complex simulation system completely unrelated to OpenClaw's mission as a personal AI assistant for messaging channels, violating the requirement to discuss new features first.</div>
         
     </div>
     
@@ -23055,22 +22963,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.0/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.7/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR changes the Render deployment configuration to use the free plan, which may not provide durable storage, potentially breaking the app's reliance on state/workspace under /data.</li>
+            <li>Removes persistent storage while keeping state/workspace directories configured for /data, creating runtime failures</li>
             
-            <li>The removal of the persistent disk mount at /data may cause runtime failures and data loss across restarts if the free plan provides only ephemeral storage.</li>
+            <li>Breaks core functionality of personal AI assistant that needs to maintain state and workspace data</li>
             
-            <li>This PR changes the Render deployment to a free plan and removes persistent storage, which directly conflicts with the goal of providing a reliable and always-on personal AI assistant as stated in the README.md. The removal of persistent storage will likely lead to data loss and a degraded user experience.</li>
+            <li>Contradicts project's emphasis on being a 'personal assistant' that requires data persistence</li>
+            
+            <li>No discussion or architectural consideration as required by contributing guidelines for infrastructure changes</li>
+            
+            <li>Changes deployment configuration without testing or validation as required by contribution process</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR introduces changes that may break the app's functionality and data persistence, requiring a thorough review to ensure the changes are safe and compatible with the project's requirements.</div>
+        <div class="consensus-detail">This PR breaks core functionality by removing persistent storage while keeping paths that depend on it, violating the project's stability focus and contribution guidelines requiring discussion for architectural changes.</div>
         
     </div>
     
@@ -23083,26 +22995,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.0/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.7/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The plugin manifest uses the wrong filename (`clawdbot.plugin.json` instead of `openclaw.plugin.json`), preventing the plugin from being loaded, which violates the project's plugin architecture.</li>
+            <li>Uses incorrect branding throughout - 'clawdbot' instead of 'openclaw' in filenames, imports, and package names</li>
             
-            <li>There's a nonexistent type import (`ClawdbotPluginApi` from `src/plugins/types.js`), indicating a misunderstanding of the project's internal structure.</li>
+            <li>Plugin manifest filename 'clawdbot.plugin.json' won't be discovered by OpenClaw's plugin system which expects 'openclaw.plugin.json'</li>
             
-            <li>The package scope is incorrect (`@clawdbot/rube-mcp` instead of `@openclaw/rube-mcp`), and the `package.json` is missing the required `"openclaw": { "extensions": [...] }` field, deviating from the project's package management conventions.</li>
+            <li>Imports non-existent 'ClawdbotPluginApi' type instead of 'OpenClawPluginApi'</li>
             
-            <li>The tool name casing mismatch (`normalizeTool`) suggests a lack of adherence to project coding standards.</li>
+            <li>Package scope '@clawdbot/rube-mcp' conflicts with OpenClaw's '@openclaw/' namespace</li>
             
-            <li>The PR introduces a large number of changes (+1193/-29), which increases the risk of introducing bugs and makes it harder to review, conflicting with the contribution guidelines to keep PRs focused.</li>
+            <li>Missing required 'openclaw' field in package.json for proper extension registration</li>
             
         </ul>
         
         
-        <div class="consensus-detail">Due to fundamental errors in plugin manifest naming, type imports, package scope, and tool naming, this PR significantly deviates from the project's architecture and contribution guidelines, requiring substantial rework before it can be considered.</div>
+        <div class="consensus-detail">This PR contains fundamental branding and architectural incompatibilities that indicate it was developed for a different project and not properly adapted for OpenClaw's codebase.</div>
         
     </div>
     
@@ -23121,20 +23033,20 @@
         
         <ul class="drift-list">
             
-            <li>The PR introduces a committed invalid `openclaw.json` that will break config reads, which is a concrete security regression.</li>
+            <li>Commits invalid JSON config (openclaw.json) that will break core functionality like onboarding wizard and configuration flows</li>
             
-            <li>The changes expose Chrome DevTools Protocol (CDP) on a public bind + host-published port, and also publish the bridge port on all interfaces, creating unsafe default network exposure.</li>
+            <li>Introduces significant security regressions by granting passwordless sudo to node user, negating container hardening</li>
             
-            <li>The Dockerfile grants passwordless sudo to the `node` user, negating the prior “run as non-root” hardening boundary.</li>
+            <li>Exposes sensitive ports (Chrome DevTools Protocol, bridge) on public interfaces by default, creating unsafe network exposure</li>
             
-            <li>The PR does not follow the recommended path of using the CLI wizard for setup, and instead uses a custom Docker setup.</li>
+            <li>Large infrastructure changes without prior discussion violate the contributing guideline to 'Start a GitHub Discussion or ask in Discord first' for new features/architecture</li>
             
-            <li>The PR introduces a Gluetun VPN sidecar and custom network/IPs, which are not mentioned in the project's documentation and may not align with the project's goals.</li>
+            <li>Changes appear untested and could break the stability focus mentioned in CONTRIBUTING.md</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR introduces significant security regressions and does not align with the project's recommended setup path, requiring further discussion and review before merging.</div>
+        <div class="consensus-detail">This PR introduces breaking configuration issues and security regressions that directly conflict with the project's stability focus and security practices, while making significant architectural changes without following the required discussion process.</div>
         
     </div>
     
@@ -23153,20 +23065,20 @@
         
         <ul class="drift-list">
             
-            <li>Contains a critical double-counting bug that will overcharge users</li>
+            <li>Contains critical double-counting bug that overcharges users for cache reads</li>
             
-            <li>Hardcoded pricing values may have incorrect units</li>
+            <li>Hardcodes provider-specific pricing values without configuration system</li>
             
-            <li>Fallback calculation produces mathematically incorrect results</li>
+            <li>Implements fallback calculation that produces mathematically incorrect results</li>
             
-            <li>Assumption that cache read is a subset of input may not match provider reporting semantics</li>
+            <li>Lacks proper testing verification despite affecting billing functionality</li>
             
-            <li>Introduces a critical bug where cache read tokens are double-counted, leading to overcharging, which directly contradicts the goal of accurate cost estimation.</li>
+            <li>No discussion or issue reference for this significant billing change</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR addresses a specific need and follows project conventions, it contains critical bugs and issues that need to be addressed before merging.</div>
+        <div class="consensus-detail">The PR contains a critical billing bug that double-counts cache read tokens, which would overcharge users and conflicts with the project's focus on stability and reliability.</div>
         
     </div>
     
@@ -23211,26 +23123,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.5/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.3/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR introduces a new `zhch/README.md` file with local git identity commands, which is user-specific and contains a personal email address, making it inappropriate for the repo.</li>
+            <li>Mandates Chinese-only interaction which conflicts with the English-first international project</li>
             
-            <li>The PR does not follow the project's guidelines for formatting utilities, terminal output, and CLI patterns.</li>
+            <li>Adds personal git configuration file (zhch/README.md) with private email that doesn't belong in the repository</li>
             
-            <li>The PR does not adhere to the project's import conventions and code quality standards.</li>
+            <li>Introduces language requirements not mentioned in any project documentation</li>
             
-            <li>The addition of `zhch/README.md` containing personal git configuration and email address is a significant deviation from project contribution guidelines and general security best practices.</li>
+            <li>Creates user-specific directory structure that goes against the documented project organization</li>
             
-            <li>The PR introduces Chinese-only interaction guidance, which may not align with the project's global vision if it aims to be language-agnostic or support multiple languages equally.</li>
+            <li>The Chinese-only mandate contradicts the project's English documentation, international community, and global accessibility goals</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR has some aligned aspects, but the introduction of a user-specific file with personal information and the lack of adherence to project guidelines raise concerns that need to be discussed before merging.</div>
+        <div class="consensus-detail">The PR introduces a Chinese-only interaction requirement that fundamentally conflicts with the project's English-first international nature and adds inappropriate personal configuration files.</div>
         
     </div>
     
@@ -23242,27 +23154,27 @@
                 <span class="pr-author">@zzjj7000</span>
             </div>
             <div>
-                <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.5/10</span>
+                <span class="badge badge-review">REVIEW</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.7/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>Introduces significant out-of-scope behavioral changes, including a SmartRouter and context optimizer</li>
+            <li>PR description mentions adding 'reasoning: true' for kimi-k2-thinking model but this change is not visible in the diff</li>
             
-            <li>Adds new external API-calling logic and undocumented options</li>
+            <li>Greptile summary indicates significant out-of-scope changes (SmartRouter, context optimizer, patch files) that are not shown in the provided diff</li>
             
-            <li>Commits local/dev artifacts, such as package-lock and hard-coded batch scripts</li>
+            <li>If additional unreported changes exist, they would represent scope creep beyond the stated Moonshot configuration improvements</li>
             
-            <li>Increases risk of regression and instability</li>
+            <li>The PR includes several unrelated changes such as SmartRouter, context optimizer, and local development artifacts, which significantly expand the scope beyond the intended Moonshot configuration updates.</li>
             
-            <li>The PR description and the Greptile analysis indicate that the PR includes several large, unrelated behavioral additions such as a SmartRouter, context-optimizer, PatchManager, and local patch tooling/artifacts, which significantly expands the scope and risk.</li>
+            <li>These additional changes introduce new external API-calling logic and modify existing behaviors, which could impact the project's stability and performance.</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR addresses a specific issue, its scope and risk are significantly increased by the introduction of unrelated changes, making it necessary to discuss and refactor the PR before merging.</div>
+        <div class="consensus-detail">The visible change aligns well with OpenClaw's configuration patterns, but the discrepancy between PR description and actual diff, plus Greptile's warning about hidden scope creep, requires careful review to ensure no unintended changes are included.</div>
         
     </div>
     
@@ -23275,26 +23187,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.5/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.7/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR introduces a new dependency, @elizaos/openclaw-adapter, without clear justification or explanation of its purpose, which may conflict with the project's architecture or goals.</li>
+            <li>Adds '@elizaos/openclaw-adapter' dependency without any documentation or justification for this integration</li>
             
-            <li>The PR changes the gateway locking behavior to allow running multiple gateway instances by default, which may introduce security risks or conflicts with the project's existing architecture.</li>
+            <li>Creates automated upstream sync workflow that suggests this is a fork rather than the main OpenClaw repository</li>
             
-            <li>The PR includes a sync workflow that can proceed after a failed merge, which may lead to unintended consequences or conflicts with the project's existing workflow.</li>
+            <li>Disables gateway locking by default which conflicts with the single-user personal assistant architecture</li>
             
-            <li>This PR introduces a new root dependency `@elizaos/openclaw-adapter`, which is not aligned with the project's stated goals or roadmap. The README emphasizes OpenClaw as a personal AI assistant that connects to existing channels, not a platform for arbitrary adapters. The CONTRIBUTING.md encourages discussing new features/architecture before submitting a PR, which doesn't seem to have happened here.</li>
+            <li>References 'REALLYopenClaw jailbreak changes' suggesting unauthorized modifications to core security features</li>
             
-            <li>The PR changes gateway locking behavior to allow multiple gateway instances by default, which could lead to instability or resource conflicts if not carefully managed. This deviates from the project's focus on stability and UX improvements.</li>
+            <li>Changes fundamental gateway behavior without discussion or architectural review</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR introduces significant changes to the project's architecture and workflow, but lacks clear justification or explanation of its purpose, which requires further discussion and review before merging.</div>
+        <div class="consensus-detail">This PR appears to be from a fork attempting to integrate unauthorized modifications and external dependencies that fundamentally conflict with OpenClaw's architecture as a personal, single-user AI assistant.</div>
         
     </div>
     
@@ -23307,26 +23219,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.5/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.7/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>Hard-codes a port that conflicts with the Render-provided PORT env var</li>
+            <li>Hard-codes port 18789 in Dockerfile CMD which conflicts with Render's PORT environment variable</li>
             
-            <li>Introduces an unrelated behavioral/cost change by updating the Render plan</li>
+            <li>Changes Render service plan from starter to standard without justification or discussion</li>
             
-            <li>Lacks testing and may cause deployment failures on Render</li>
+            <li>Introduces potential deployment failure due to port mismatch between Docker and Render configuration</li>
             
-            <li>The Dockerfile change hardcodes port 18789, conflicting with Render's PORT environment variable, potentially breaking traffic and health checks, which deviates from the project's focus on stability and UX.</li>
+            <li>Makes unrelated changes (Dockerfile and Render plan) in a single PR without clear rationale</li>
             
-            <li>The render.yaml change modifies the service plan, introducing an unrelated behavioral/cost change that wasn't discussed and doesn't align with the current roadmap.</li>
+            <li>No testing mentioned despite CONTRIBUTING.md requirement to test locally</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR updates the Docker image and Render blueprint, it introduces conflicts and unrelated changes that require further review and testing.</div>
+        <div class="consensus-detail">The PR addresses legitimate Docker deployment needs but introduces configuration conflicts and unrelated changes that could break Render deployments.</div>
         
     </div>
     
@@ -23339,26 +23251,26 @@
             </div>
             <div>
                 <span class="badge badge-close">CLOSE</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.5/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.0/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR introduces a large number of changes (+1698/-24) across 22 files, which may indicate a lack of focus or a significant departure from the project's architecture.</li>
+            <li>PR description is completely empty - violates contributing guidelines requiring clear problem/solution description</li>
             
-            <li>The PR does not provide a clear explanation of the problem and fix in the description, making it difficult to understand the purpose and impact of the changes.</li>
+            <li>No linked issues or context provided despite CONTRIBUTING.md requirement</li>
             
-            <li>The PR does not include any evidence of testing or verification, which is a requirement for PRs in the CONTRIBUTING.md document.</li>
+            <li>Security impact section not filled out despite being marked as required</li>
             
-            <li>The PR does not follow the recommended format for PR descriptions, which may indicate a lack of attention to detail or a disregard for project conventions.</li>
+            <li>Human verification section empty despite being required</li>
             
-            <li>The PR description is incomplete, lacking details on the problem, fix, and scope, which violates the contributing guidelines.</li>
+            <li>Build errors present in included logs suggest incomplete/broken implementation</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR requires further review to ensure that the changes align with the project's architecture and goals, and to verify that the fix is correct and thoroughly tested.</div>
+        <div class="consensus-detail">This PR violates multiple required contributing guidelines with an empty description, no testing evidence, build errors, and lacks all required documentation despite being a large change.</div>
         
     </div>
     
@@ -23370,27 +23282,27 @@
                 <span class="pr-author">@ThinkIbrokeIt</span>
             </div>
             <div>
-                <span class="badge badge-review">REVIEW</span>
+                <span class="badge badge-close">CLOSE</span>
                 <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.0/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR includes unrelated functional changes (completion install/postinstall behavior, security scaffolding) that may not be aligned with the project's current focus</li>
+            <li>Package version rollback from 2026.1.30 to 2026.1.29 conflicts with development channel practices</li>
             
-            <li>The PR includes a package version rollback, which may not be intentional and could cause issues</li>
+            <li>Bundles unrelated changes (shell completion, security scaffolding) into what should be a focused test fix</li>
             
-            <li>The PR includes a logic bug in the new history sanitization API, which could cause issues if merged as-is</li>
+            <li>Introduces new functional changes without prior discussion as recommended for new features</li>
             
-            <li>Includes unrelated changes such as shell completion, session sanitization, and package version rollback, violating the CONTRIBUTING.md guideline to keep PRs focused.</li>
+            <li>Contains logic bug in sanitizeSessionHistory() that computes but doesn't return sanitized content</li>
             
-            <li>The package version rollback could cause issues with deployments and updates.</li>
+            <li>Massive diff (+2460/-784) for what's described as a 'quick guard' test skip</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR addresses a specific issue and provides a temporary fix, it includes unrelated functional changes and a package version rollback that need to be reviewed and addressed before merging.</div>
+        <div class="consensus-detail">This PR violates the project's contribution guidelines by bundling multiple unrelated changes, includes a version rollback that breaks development practices, and contains functional bugs while being presented as a simple test fix.</div>
         
     </div>
     
@@ -23402,25 +23314,27 @@
                 <span class="pr-author">@swarmagents</span>
             </div>
             <div>
-                <span class="badge badge-review">REVIEW</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.0/10</span>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.0/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR does not actually fix the issue, but rather documents the suspected root cause and potential fixes</li>
+            <li>PR title claims to fix the bug but only adds documentation without implementing any solution</li>
             
-            <li>The PR title and description do not accurately reflect the contents of the PR, which may cause confusion</li>
+            <li>Creates a new 'contributions/' directory structure not mentioned in project guidelines</li>
             
-            <li>This PR only adds documentation and does not fix the reported bug, which is a mismatch with the PR title and description.</li>
+            <li>Does not follow the 'one thing per PR' principle - claims bug fix but delivers analysis</li>
             
-            <li>The PR does not include any code changes, build configuration modifications, or tests, contrary to the contributing guidelines.</li>
+            <li>Adds documentation file instead of actual code changes to resolve the module resolution issue</li>
+            
+            <li>Does not align with the project's focus on 'fixing edge cases' by actually fixing them</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR provides valuable analysis and insights, it does not address the underlying issue and may require further work to ensure alignment with the project's goals and architecture.</div>
+        <div class="consensus-detail">While the analysis is valuable, the PR misleadingly claims to fix a bug but only documents it, creating confusion about the actual state of the issue.</div>
         
     </div>
     
@@ -23433,26 +23347,26 @@
             </div>
             <div>
                 <span class="badge badge-discuss">DISCUSS</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.0/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.3/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>Introduces substantial unrelated Docker/image changes (external binary downloads)</li>
+            <li>Introduces substantial unrelated Docker changes including external binary downloads (gh, gogcli, goplaces) not mentioned in core project docs</li>
             
-            <li>Adds a tracked backup compose file, which is not directly related to the feature</li>
+            <li>Adds tracked backup compose file (docker-compose.yml.bak) which appears to be development debris</li>
             
-            <li>Includes several unrelated container/docs changes (Dockerfile tooling installs, new compose override)</li>
+            <li>Includes Chrome/Playwright dependencies installation that seems specific to 'Sparky' functionality not documented in project vision</li>
             
-            <li>Lacks complete sessionKey plumbing path, making the feature inconsistent across code paths</li>
+            <li>Mixes a focused CLI feature with significant container infrastructure changes</li>
             
-            <li>The PR includes substantial, unrelated changes to the Dockerfile (installing gh, gogcli, goplaces, chrome deps) and docker-compose files (new override, backup compose file), which violates the principle of focused PRs.</li>
+            <li>sessionKey plumbing appears incomplete - hook-mapped wake actions don't forward sessionKey making the feature inconsistent</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR addresses a specific problem and provides a clear solution, it introduces unrelated changes and lacks a complete implementation, requiring further discussion and refinement.</div>
+        <div class="consensus-detail">While the core sessionKey feature aligns with fixing documented issues, the PR introduces substantial unrelated Docker infrastructure changes and appears incomplete in its implementation.</div>
         
     </div>
     
@@ -23471,16 +23385,20 @@
         
         <ul class="drift-list">
             
-            <li>The PR introduces a `codeindex.cm` file that contains local machine paths and `sudo` instructions, which conflicts with the project's documentation guidance to avoid personal device names/hostnames/paths.</li>
+            <li>Translates core documentation (AGENTS.md) to Chinese without clear internationalization strategy mentioned in project docs</li>
             
-            <li>The PR's Feishu audio upload path likely mislabels non-opus audio as `file_type: "opus"` without conversion and omits the documented required `duration` for audio uploads, which can cause runtime/API failures.</li>
+            <li>Adds local machine-specific paths in codeindex.md that conflict with project's generic documentation guidelines</li>
             
-            <li>The PR translates the AGENTS.md file to Chinese, but the CONTRIBUTING.md file states that `docs/zh-CN/**` is generated and should not be edited unless explicitly asked.</li>
+            <li>Introduces potentially broken Feishu audio implementation that may cause runtime failures</li>
+            
+            <li>Changes appear to mix unrelated concerns (i18n, dev tools, media handling) in single PR</li>
+            
+            <li>No clear connection to documented project roadmap priorities (stability, UX, performance)</li>
             
         </ul>
         
         
-        <div class="consensus-detail">The PR introduces potentially problematic changes to the Feishu channel and includes a non-portable `codeindex.cm` file, requiring discussion and revision before merging.</div>
+        <div class="consensus-detail">While the Feishu media enhancement aligns with multi-channel support, the unauthorized documentation translation and potentially broken implementation require discussion before merge.</div>
         
     </div>
     
@@ -23492,27 +23410,27 @@
                 <span class="pr-author">@trevorgordon981</span>
             </div>
             <div>
-                <span class="badge badge-discuss">DISCUSS</span>
+                <span class="badge badge-close">CLOSE</span>
                 <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.0/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>Introduces a hardcoded Finnhub API token as a runtime fallback, which is a security issue and not aligned with the project's security guidelines</li>
+            <li>Contains hardcoded API tokens in trading skills which directly violates security best practices</li>
             
-            <li>Lacks clear documentation on how the session persistence module is intended to be used in production, which may lead to confusion and misalignment with the project's goals</li>
+            <li>Adds extensive trading functionality that appears unrelated to the core personal AI assistant vision</li>
             
-            <li>Introduces hardcoded API keys, a major security vulnerability, violating implicit security guidelines.</li>
+            <li>Introduces 72 files with 9445 additions which suggests scope creep beyond the stated session persistence feature</li>
             
-            <li>Includes a large number of changes across many files, contrary to the CONTRIBUTING.md guideline of keeping PRs focused.</li>
+            <li>Trading skills (news-sentiment, options-flow, portfolio-risk) don't align with the personal assistant use case described in README</li>
             
-            <li>Adds trading skills, which are not mentioned in the README or CONTRIBUTING.md as a current focus.</li>
+            <li>Session persistence module is not wired into the gateway startup/shutdown flow, making it incomplete</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR adds valuable features to the project, it also introduces a security issue that needs to be addressed before merging, and requires further discussion on how the session persistence module is intended to be used in production.</div>
+        <div class="consensus-detail">The PR contains committed API secrets which is a security violation and includes extensive trading functionality that diverges from OpenClaw's core vision as a personal AI assistant.</div>
         
     </div>
     
@@ -23524,27 +23442,27 @@
                 <span class="pr-author">@kbpranay</span>
             </div>
             <div>
-                <span class="badge badge-discuss">DISCUSS</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.0/10</span>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.7/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>Introduces a new dependency on Supabase, which may not be aligned with the project's existing architecture and technology stack</li>
+            <li>Completely rebrands the project from 'OpenClaw' to 'SecureClaw' without discussion</li>
             
-            <li>Changes the project's name to 'SecureClaw' and rebrands the README, which may not be in line with the project's original vision and goals</li>
+            <li>Changes the core tagline from 'EXFOLIATE! EXFOLIATE!' to 'Secure by default. Open at heart.'</li>
             
-            <li>Adds a new encrypted secret vault, which may not be compatible with the project's existing configuration and deployment models</li>
+            <li>Introduces commercial branding (clawoncloud.com) suggesting this is a fork for commercial purposes</li>
             
-            <li>This PR introduces a significant architectural change by adding Supabase as an optional environment variable store, which is not mentioned in the existing project documentation.</li>
+            <li>Adds complex encrypted vault infrastructure that wasn't on the documented roadmap</li>
             
-            <li>The introduction of 'SecureClaw' as a security-hardened distribution deviates from the project's core focus as a personal AI assistant.</li>
+            <li>Changes fundamental project identity and messaging without maintainer consensus</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR addresses some security concerns and adds new features, it also introduces significant changes to the project's architecture and branding, which require further discussion and alignment with the project's maintainers and community.</div>
+        <div class="consensus-detail">This PR fundamentally rebrands the project and changes its core identity without maintainer approval, which conflicts with the established contribution process that requires discussion for architectural changes.</div>
         
     </div>
     
@@ -23556,27 +23474,27 @@
                 <span class="pr-author">@montelli99</span>
             </div>
             <div>
-                <span class="badge badge-discuss">DISCUSS</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.0/10</span>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.3/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR introduces a new Python package structure and dependencies, which may not be aligned with the project's existing architecture</li>
+            <li>Introduces entirely new subsystems (proxy_system, unified_api) not mentioned in project vision or roadmap</li>
             
-            <li>The PR includes a new configuration system, which may not be consistent with the project's existing configuration management</li>
+            <li>Adds Python components to what appears to be a primarily Node.js/TypeScript project</li>
             
-            <li>The PR includes a new scraper module, which may not be aligned with the project's existing data scraping architecture</li>
+            <li>Creates new API server infrastructure that duplicates existing gateway functionality</li>
             
-            <li>The PR does not explicitly mention how the new proxy system will be integrated with the existing OpenClaw architecture</li>
+            <li>No clear connection to OpenClaw's core mission as a personal AI assistant</li>
             
-            <li>The PR does not provide clear documentation on how to use the new proxy system</li>
+            <li>Proxy scraping functionality seems unrelated to AI assistant capabilities</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR addresses a specific need, it introduces significant changes to the project's architecture and configuration management, which require further discussion and review to ensure alignment with the project's goals and existing architecture.</div>
+        <div class="consensus-detail">This PR introduces major new subsystems unrelated to OpenClaw's AI assistant mission and violates the contributing guideline requiring discussion before new features/architecture changes.</div>
         
     </div>
     
@@ -23588,27 +23506,27 @@
                 <span class="pr-author">@emailhxn</span>
             </div>
             <div>
-                <span class="badge badge-discuss">DISCUSS</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.0/10</span>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.7/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The new instrumentation logs full user prompts, tool results, and full assistant message structures at info level, which is likely to capture secrets/PII and tool output contents</li>
+            <li>Logs full user prompts and assistant responses at info level by default, creating major privacy/security risks for a personal assistant</li>
             
-            <li>The added analyzer script's help text references a different filename than the one added, and there's a stray 'logs/log' file that looks accidental</li>
+            <li>Captures and persists tool outputs and results which may contain sensitive data</li>
             
-            <li>The logger path resolution change alters how relative log file paths behave and may need reconsideration or explicit documentation</li>
+            <li>Violates the project's emphasis on being a 'personal' assistant by potentially exposing private conversations</li>
             
-            <li>The PR introduces a Python log analyzer, which is a new dependency and tool outside the core focus of the project as defined in the README (personal AI assistant, not log analysis).</li>
+            <li>Adds Python dependency and analyzer script without clear integration with the Node.js-based architecture</li>
             
-            <li>The PR logs full user prompts, tool results, and assistant messages at the info level, which poses a significant security risk by potentially exposing secrets and PII, conflicting with the project's need for security.</li>
+            <li>Changes logging path resolution behavior which could break existing configurations</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR adds valuable structured log content, it raises significant concerns about sensitive data exposure and needs further discussion to address these issues before merging.</div>
+        <div class="consensus-detail">This PR fundamentally conflicts with OpenClaw's vision as a personal, privacy-focused AI assistant by logging sensitive user data and conversations to disk by default.</div>
         
     </div>
     
@@ -23685,26 +23603,26 @@
             </div>
             <div>
                 <span class="badge badge-review">REVIEW</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.5/10</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.3/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>Contains unrelated breaking changes and a malformed test file</li>
+            <li>Contains unrelated breaking changes to schema that make optional config required</li>
             
-            <li>Schema changes make previously-optional config required and remove the `edge` TTS provider</li>
+            <li>Removes 'edge' TTS provider despite existing references in codebase</li>
             
-            <li>Runner now contains multiple `/tmp` debug file writes which add side effects and can fail/unhandled-reject in some environments</li>
+            <li>Includes non-TypeScript test file that will fail CI checks</li>
             
-            <li>Includes unrelated changes like removing the `edge` TTS provider and a non-TS test file, and introduces debug file writes, which increases merge risk and adds side effects.</li>
+            <li>Adds debug file writes to /tmp with potential unhandled rejections</li>
             
-            <li>Schema changes make previously optional config required, which could break existing configurations.</li>
+            <li>Multiple accidental changes not mentioned in PR description</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR introduces a useful feature, it contains unrelated breaking changes and potential issues that need to be addressed before merging.</div>
+        <div class="consensus-detail">The core feature aligns with project goals but the PR contains significant unrelated breaking changes and CI-breaking files that need to be addressed before merge.</div>
         
     </div>
     
@@ -23716,27 +23634,27 @@
                 <span class="pr-author">@Trompetilla</span>
             </div>
             <div>
-                <span class="badge badge-discuss">DISCUSS</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.5/10</span>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.7/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>OAuth-only users are handled in implicit provider resolution with a placeholder `apiKey` and an empty bearer token</li>
+            <li>Removes critical GitHub workflow files (.github/workflows/*) without explanation, breaking CI/CD infrastructure</li>
             
-            <li>The new CLI command does not perform actual model discovery, only ensures a models.json file exists</li>
+            <li>Adds provider-specific integration without clear documentation or rationale for why Chutes.ai deserves core integration</li>
             
-            <li>Changes to multiple files, including workflows and README, without clear justification or documentation</li>
+            <li>Contains functional bugs in OAuth handling and model discovery that could break user experience</li>
             
-            <li>The PR description and Greptile analysis raise concerns about OAuth handling and the actual functionality of the new CLI command, suggesting potential functional mismatches and incomplete implementation.</li>
+            <li>Large code deletion (-1192 lines) suggests potential breaking changes to existing functionality</li>
             
-            <li>The removal of the `auto-response.yml` workflow is unexplained and could impact issue management.</li>
+            <li>No clear connection to documented project roadmap or stated priorities</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR adds new features and integrations, it raises concerns about OAuth-only user handling and the functionality of the new CLI command, requiring further discussion and clarification before merging.</div>
+        <div class="consensus-detail">This PR removes critical CI infrastructure and introduces a provider-specific integration with functional bugs, conflicting with the project's stability focus and contribution guidelines requiring discussion for architectural changes.</div>
         
     </div>
     
@@ -23748,27 +23666,27 @@
                 <span class="pr-author">@felipcsousa</span>
             </div>
             <div>
-                <span class="badge badge-review">REVIEW</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.5/10</span>
+                <span class="badge badge-discuss">DISCUSS</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.3/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The introduction of a patch script (patch-openclaw-dashboard.sh) that modifies built/minified assets is brittle and environment-specific, which may cause issues across installs and upgrades.</li>
+            <li>Includes a brittle shell script that patches minified assets with hardcoded paths</li>
             
-            <li>The in-flight guard added to prevent concurrent log fetches may unintentionally ignore user-triggered refreshes, which could lead to unexpected behavior.</li>
+            <li>The patch script assumes specific Homebrew installation paths that won't work across environments</li>
             
-            <li>Introduces a brittle patch script (`patch-openclaw-dashboard.sh`) that directly modifies minified assets in a hardcoded environment, which is not maintainable or portable and conflicts with standard development practices.</li>
+            <li>Modifies built/minified JavaScript files rather than source code, creating maintenance issues</li>
             
-            <li>The patch script targets specific file names and paths within the `node_modules` directory, which are subject to change with updates, making the patch unreliable.</li>
+            <li>The patch approach conflicts with proper development practices and CI/CD workflows</li>
             
-            <li>The concurrency guard implemented in `ui/src/ui/controllers/logs.ts` might unintentionally suppress user-triggered refreshes, negatively impacting UX.</li>
+            <li>Testing was explicitly not performed despite this being a performance-critical change</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR addresses a specific performance issue, it also introduces some concerns around maintainability and potential unexpected behavior, which require further review and discussion.</div>
+        <div class="consensus-detail">While the core UI performance fix aligns with project priorities, the brittle patching approach and lack of testing create significant maintenance and reliability concerns that need architectural discussion.</div>
         
     </div>
     
@@ -23780,91 +23698,27 @@
                 <span class="pr-author">@swarmagents</span>
             </div>
             <div>
-                <span class="badge badge-discuss">DISCUSS</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.5/10</span>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.3/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR does not actually fix the reported WebSocket issue, but rather provides speculative analysis and recommendations</li>
+            <li>PR title suggests a fix but only adds documentation without any code changes</li>
             
-            <li>The PR title and description imply a bugfix, but the added content does not contain actionable code changes</li>
+            <li>Content is speculative analysis without actionable code fixes or reproducible steps</li>
             
-            <li>The PR does not align with the project's current focus on stability, UX, skills, and performance</li>
+            <li>Does not follow the contributing guidelines which emphasize 'one thing per PR' and 'describe what & why'</li>
             
-            <li>The PR adds a contribution note with speculative analysis rather than a code fix, which doesn't directly address the issue. The PR title implies a bug fix, but the content is more of a troubleshooting guide.</li>
+            <li>Adds generic troubleshooting recommendations rather than OpenClaw-specific solutions</li>
             
-            <li>The CONTRIBUTING.md states 'Bugs & small fixes → Open a PR!', but this PR doesn't contain a fix.</li>
-            
-        </ul>
-        
-        
-        <div class="consensus-detail">While the PR is well-written and follows contribution guidelines, it does not provide a concrete solution to the reported issue and may not align with the project's current priorities, requiring further discussion and clarification.</div>
-        
-    </div>
-    
-    <div class="alignment-card flagged">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/9319" target="_blank">#9319</a>
-                <strong>[Swarm] [Mattermost] WebSocket disconnects with "client si</strong>
-                <span class="pr-author">@swarmagents</span>
-            </div>
-            <div>
-                <span class="badge badge-discuss">DISCUSS</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.5/10</span>
-            </div>
-        </div>
-        
-        <ul class="drift-list">
-            
-            <li>The PR does not actually fix the reported WebSocket issue, but rather provides a speculative analysis</li>
-            
-            <li>The PR title/description imply a bugfix, but the added content does not contain actionable code changes</li>
-            
-            <li>The PR does not meet the project's contribution expectations, as it does not contain actionable, non-speculative information</li>
-            
-            <li>The PR adds a contribution note with speculative analysis rather than a code fix, which doesn't directly address the issue. The PR title implies a bug fix, but the content is more of a troubleshooting guide.</li>
-            
-            <li>The CONTRIBUTING.md states 'Bugs & small fixes → Open a PR!', but this PR doesn't contain a fix.</li>
+            <li>Created by 'swarmagents' which may indicate automated/AI generation without proper testing or understanding</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR is well-formatted and provides a clear analysis, it does not actually fix the issue and does not meet the project's contribution expectations, so further discussion is needed to determine the best course of action.</div>
-        
-    </div>
-    
-    <div class="alignment-card flagged">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/9861" target="_blank">#9861</a>
-                <strong>fix(agents): re-run tool_use/tool_result repair after limitHistoryTurns</strong>
-                <span class="pr-author">@CyberSinister</span>
-            </div>
-            <div>
-                <span class="badge badge-discuss">DISCUSS</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.5/10</span>
-            </div>
-        </div>
-        
-        <ul class="drift-list">
-            
-            <li>Introduces unrelated operational/agent helper files (`ecosystem.config.cjs`, `skills/coding-agent/scripts/*`)</li>
-            
-            <li>Includes a PM2 config with hard-coded machine paths</li>
-            
-            <li>Mutates the user’s project directory by running `git init` when missing</li>
-            
-            <li>Lack of clear documentation on the new files and their purpose</li>
-            
-            <li>Introduces new files (ecosystem.config.cjs, skills/coding-agent/scripts/*) unrelated to the core fix, deviating from the principle of focused PRs.</li>
-            
-        </ul>
-        
-        
-        <div class="consensus-detail">While the PR addresses a real issue, it also introduces unrelated changes that may cause problems and drift from the project's vision.</div>
+        <div class="consensus-detail">This PR misleadingly suggests a bug fix but only adds speculative documentation without addressing the actual WebSocket issue, violating the project's expectation for focused, actionable contributions.</div>
         
     </div>
     
@@ -23876,27 +23730,27 @@
                 <span class="pr-author">@Koba42Corp</span>
             </div>
             <div>
-                <span class="badge badge-discuss">DISCUSS</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.5/10</span>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.3/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR introduces a new dependency on the Chia blockchain and wallet protocol, which may not be aligned with the project's current architecture and technology stack.</li>
+            <li>Adds highly specialized cryptocurrency monitoring functionality not mentioned in project vision or roadmap</li>
             
-            <li>The PR's implementation of notification delivery appears to be wired to an API shape that doesn't match OpenClaw's runtime channel surface, which may cause issues with notification delivery.</li>
+            <li>Introduces significant new dependencies (chia-wallet-sdk, blockchain protocols) outside core assistant scope</li>
             
-            <li>The PR's focus on Chia blockchain wallet monitoring may not be aligned with the project's current priorities, which are listed as stability, UX, skills, and performance.</li>
+            <li>Creates P2P network connections and TLS certificate generation that may conflict with security model</li>
             
-            <li>The PR introduces a specific blockchain wallet monitoring feature, which is outside the core focus of a general-purpose AI assistant.</li>
+            <li>Notification delivery implementation appears to have API mismatches that will cause runtime failures</li>
             
-            <li>The reliance on P2P connections and self-signed certificates introduces security considerations that may not align with the project's overall security model.</li>
+            <li>Adds 2580+ lines of domain-specific code for a use case not aligned with 'personal AI assistant' vision</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR adds a new feature that could be useful to some users, it introduces new dependencies and potential architecture drift, and its implementation has some issues that need to be addressed.</div>
+        <div class="consensus-detail">This PR adds cryptocurrency-specific functionality that significantly diverges from OpenClaw's core vision as a personal AI assistant, introduces complex blockchain dependencies, and appears to have implementation bugs that would break notifications.</div>
         
     </div>
     
@@ -23908,27 +23762,987 @@
                 <span class="pr-author">@Insider77Circle</span>
             </div>
             <div>
-                <span class="badge badge-discuss">DISCUSS</span>
-                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.5/10</span>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.7/10</span>
             </div>
         </div>
         
         <ul class="drift-list">
             
-            <li>The PR introduces a significant amount of new complexity to the project, which may not align with the current focus on stability and UX</li>
+            <li>Introduces complex autonomous governance and security frameworks not mentioned in project vision or roadmap</li>
             
-            <li>The proposal relies heavily on AI-generated content, which may not be thoroughly reviewed or tested</li>
+            <li>Proposes blockchain/crypto elements (Solidity contracts, zero-knowledge proofs) that conflict with the personal AI assistant focus</li>
             
-            <li>The PR does not provide a clear plan for implementation, testing, or maintenance of the proposed governance framework</li>
+            <li>Adds enterprise-scale governance concepts inappropriate for a single-user personal assistant</li>
             
-            <li>The PR introduces a complex governance framework that may be premature for the current stage of the project, as the README emphasizes a personal AI assistant and the CONTRIBUTING guide prioritizes stability, UX, skills, and performance.</li>
+            <li>Creates 2371 lines of speculative documentation without prior discussion despite CONTRIBUTING.md requirement for architecture discussions</li>
             
-            <li>The scope of the proposed framework seems more suited for a large, decentralized ecosystem, which is not the stated goal of OpenClaw.</li>
+            <li>Introduces 'REDSTORM multi-agent research platform' branding that doesn't align with OpenClaw's identity</li>
             
         </ul>
         
         
-        <div class="consensus-detail">While the PR addresses a need for a governance framework, it introduces significant complexity and relies heavily on AI-generated content, which requires further discussion and review before proceeding.</div>
+        <div class="consensus-detail">This PR introduces enterprise-scale governance and blockchain concepts that fundamentally conflict with OpenClaw's vision as a personal, single-user AI assistant running on individual devices.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17778" target="_blank">#17778</a>
+                <strong>Create gateway-connection.png</strong>
+                <span class="pr-author">@smffff</span>
+            </div>
+            <div>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">2.0/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>PR adds only a binary image file (gateway-connection.png) without any description or context</li>
+            
+            <li>Template sections are completely unfilled - no problem statement, change type, or scope identified</li>
+            
+            <li>No linked issues or documentation explaining why this image is needed</li>
+            
+            <li>Violates contribution guidelines requiring focused PRs with clear descriptions of 'what & why'</li>
+            
+            <li>Missing required security impact assessment and human verification details</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This PR provides no context for why the image is needed and completely ignores the contribution template requirements, making it impossible to evaluate its value to the project.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17902" target="_blank">#17902</a>
+                <strong>Fix/skills toggle unavailable state (Emre #3 PR)</strong>
+                <span class="pr-author">@emre6943</span>
+            </div>
+            <div>
+                <span class="badge badge-review">REVIEW</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.7/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>PR description is completely empty - violates contribution guidelines requiring clear problem/solution description</li>
+            
+            <li>No linked issues or clear justification for the changes</li>
+            
+            <li>Massive scope (+2152/-25 across 28 files) without explanation of what's being fixed</li>
+            
+            <li>Changes core gateway session handling and Telegram auth without security impact assessment</li>
+            
+            <li>Adds personal fork documentation (openclaw-emre) that doesn't belong in upstream</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This PR violates basic contribution guidelines with an empty description, lacks justification for extensive changes to core systems, and includes inappropriate personal fork documentation.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/2780" target="_blank">#2780</a>
+                <strong>feat(channels): Add WeChat Official Account support via Bridge</strong>
+                <span class="pr-author">@NannaOlympicBroadcast</span>
+            </div>
+            <div>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.7/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Uses incorrect branding throughout (Clawdbot instead of OpenClaw) suggesting this may be from a different project</li>
+            
+            <li>Introduces significant security vulnerabilities with unauthenticated webhook endpoints and no request size limits</li>
+            
+            <li>Creates inconsistent configuration paths (plugins.entries.webhook-server vs channels.wechat)</li>
+            
+            <li>Adds external dependency on a third-party bridge service not controlled by the project</li>
+            
+            <li>Package name @haiyanfengli-llc/webhook-server doesn't follow OpenClaw naming conventions</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This PR appears to be from a different project (uses Clawdbot branding throughout) and introduces serious security vulnerabilities that conflict with OpenClaw's architecture principles.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/10024" target="_blank">#10024</a>
+                <strong>Add Render blueprint for OpenClaw</strong>
+                <span class="pr-author">@nima779</span>
+            </div>
+            <div>
+                <span class="badge badge-discuss">DISCUSS</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.0/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Sets OPENCLAW_GATEWAY_BIND=lan by default without proper authentication, creating security risk</li>
+            
+            <li>Changes health check endpoint from /health to /__openclaw__/canvas/ without justification</li>
+            
+            <li>Adds Render-specific deployment configuration not mentioned in project roadmap or vision</li>
+            
+            <li>Introduces platform-specific scripts that may not align with the project's focus on personal, local assistants</li>
+            
+            <li>The PR sets `OPENCLAW_GATEWAY_BIND=lan` by default, which conflicts with the project's security expectations as outlined in the README and CONTRIBUTING documents.</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">While the PR addresses legitimate Docker deployment needs, it introduces security risks by defaulting to LAN binding without proper auth configuration, which conflicts with the project's emphasis on personal, secure AI assistants.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/10674" target="_blank">#10674</a>
+                <strong>docs(CLAUDE.md): add DJ setup documentation and troubleshooting</strong>
+                <span class="pr-author">@apakalypse</span>
+            </div>
+            <div>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.3/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Introduces a massive 'DJ' subsystem that is not mentioned anywhere in the project vision or architecture</li>
+            
+            <li>Replaces CLAUDE.md symlink with a 28,577 line addition that appears to be unrelated to the core OpenClaw assistant functionality</li>
+            
+            <li>Adds budget governor and busy-calendar utilities without clear connection to the personal AI assistant mission</li>
+            
+            <li>Creates extensive DJ-specific documentation (docs/dj/*) and skills (skills/dj-*) that don't align with the stated focus on messaging channels and AI assistance</li>
+            
+            <li>The PR description mentions 'DJ profile pack setup' which has no basis in the project's documented goals or architecture</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This PR introduces an entirely undocumented 'DJ' subsystem that conflicts with OpenClaw's vision as a personal AI assistant, plus it contains a technical blocker that breaks git checkout.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/10676" target="_blank">#10676</a>
+                <strong>Claude/authorize external access lbcnb</strong>
+                <span class="pr-author">@zacharyjleach-stack</span>
+            </div>
+            <div>
+                <span class="badge badge-discuss">DISCUSS</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.3/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Introduces significant new 'Aether Conductor' functionality not mentioned in project vision or roadmap</li>
+            
+            <li>Adds external browser automation capabilities that could conflict with OpenClaw's focus on being a 'personal AI assistant'</li>
+            
+            <li>Creates potential security risks with command injection vulnerabilities that contradict the project's emphasis on safety</li>
+            
+            <li>Adds substantial complexity (2700+ lines) for functionality that wasn't identified as a current priority</li>
+            
+            <li>The 'Aether' branding suggests this may be intended for a different project or fork</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">While technically competent, this PR introduces major new functionality with security concerns that wasn't on the stated roadmap and may not align with OpenClaw's vision as a personal assistant.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/11502" target="_blank">#11502</a>
+                <strong>Update CONTRIBUTING.md GitHub PR description or a "Recent Updates" list</strong>
+                <span class="pr-author">@mnk-nasir</span>
+            </div>
+            <div>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.7/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Changes 'We are currently prioritizing' section from future goals to past accomplishments, creating semantic inconsistency</li>
+            
+            <li>Misleads potential contributors about what help is actually needed</li>
+            
+            <li>Contradicts the section header which explicitly states current priorities</li>
+            
+            <li>May discourage contributions in areas that are actually still being worked on</li>
+            
+            <li>The PR changes the language from 'current priorities' to 'completed work', which conflicts with the section's intent to guide contributors on what help is needed.</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">The PR creates a fundamental semantic mismatch between the section header ('We are currently prioritizing') and the content (past tense accomplishments), which could misdirect contributor efforts.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/13833" target="_blank">#13833</a>
+                <strong>Cursor/cloud agent 1770777372587 3zom0</strong>
+                <span class="pr-author">@zhch158</span>
+            </div>
+            <div>
+                <span class="badge badge-review">REVIEW</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.3/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Mandates Chinese language for all interactions, conflicting with the English-language project and international community</li>
+            
+            <li>Adds personal git configuration file (zhch/README.md) with user-specific settings that would misconfigure other contributors</li>
+            
+            <li>Language requirement directly conflicts with project's English documentation, Discord community, and international contributor base</li>
+            
+            <li>Personal configuration files don't belong in the main repository</li>
+            
+            <li>No clear justification for why Chinese language would be required for an international open source project</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">The mandatory Chinese language requirement fundamentally conflicts with the project's English-language nature and international community, plus the personal git config file would misconfigure other contributors.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/15136" target="_blank">#15136</a>
+                <strong>Bea personality</strong>
+                <span class="pr-author">@glevinson</span>
+            </div>
+            <div>
+                <span class="badge badge-discuss">DISCUSS</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.0/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Completely changes the project identity from 'OpenClaw' to 'OpenBea' without any discussion or justification</li>
+            
+            <li>Adds 51,940 lines of code with no description, violating the 'Describe what & why' contribution guideline</li>
+            
+            <li>Introduces a hardcoded 'Bea' personality that conflicts with the personal AI assistant vision</li>
+            
+            <li>Adds Python dependencies to Docker image without architectural discussion</li>
+            
+            <li>Disables device authentication by default, potentially compromising the security model</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This PR fundamentally changes the project identity and makes significant architectural changes without any description or prior discussion, directly violating multiple contribution guidelines.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/15982" target="_blank">#15982</a>
+                <strong>fix: pass agentId to resolveSessionFilePath in reply flow (NX-003)</strong>
+                <span class="pr-author">@automagik-genie</span>
+            </div>
+            <div>
+                <span class="badge badge-discuss">DISCUSS</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.3/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Bundles multiple unrelated features (NX-001, NX-002, NX-003) in a single PR, violating 'Keep PRs focused (one thing per PR)' guideline</li>
+            
+            <li>Adds Jenkins CI/CD infrastructure without prior discussion, which represents significant architectural change</li>
+            
+            <li>Introduces cross-gateway functionality that wasn't documented as a project goal</li>
+            
+            <li>Size XL PR with 3196 additions across 14 files conflicts with focused contribution approach</li>
+            
+            <li>No GitHub Discussion or Discord consultation for major architectural additions as required for 'New features / architecture'</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">While the core agentId fix aligns with project goals, the PR bundles major undiscussed infrastructure changes that require architectural review and should be split into separate focused PRs.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17777" target="_blank">#17777</a>
+                <strong>fix(tui): prevent URL breaking during line wrap</strong>
+                <span class="pr-author">@proto-genesys-x</span>
+            </div>
+            <div>
+                <span class="badge badge-discuss">DISCUSS</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.0/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Technical approach is fundamentally flawed - ZWNJ characters don't prevent line breaks and will corrupt URLs when copied</li>
+            
+            <li>Solution makes URLs less functional rather than more functional, contradicting the stated goal</li>
+            
+            <li>Includes accidental debug log file (openclaw-2026-02-16.log) suggesting incomplete cleanup</li>
+            
+            <li>Uses Unicode characters that may not render consistently across all terminal environments</li>
+            
+            <li>The use of zero-width non-joiner characters (U+200C) in URLs can corrupt copy/paste functionality, which conflicts with the project's goal of maintaining functionality and usability.</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">While this addresses a real TUI issue, the technical solution is incorrect and will make URLs non-functional when copied, requiring discussion of alternative approaches.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/3895" target="_blank">#3895</a>
+                <strong>perf: mathematical optimization of vision pipeline via deterministic scaling</strong>
+                <span class="pr-author">@adarshsen592-create</span>
+            </div>
+            <div>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.3/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Introduces breaking changes by removing required imports and constants without proper migration</li>
+            
+            <li>Changes function signature to guarantee JPEG output but early-exit path can return non-JPEG buffers with incorrect contentType</li>
+            
+            <li>Removes fallback mechanisms and error handling that were present in the original implementation</li>
+            
+            <li>Mathematical optimization approach is heuristic without validation, potentially breaking the maxBytes constraint guarantee</li>
+            
+            <li>Code appears to have compilation errors due to missing imports (getImageMetadata, resizeToJpeg, DEFAULT_* constants)</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">While the performance optimization goal aligns with project priorities, the implementation introduces breaking changes and compilation errors that fundamentally break the codebase.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/8581" target="_blank">#8581</a>
+                <strong>修复: CVE-2025-12345 Node.js 安全漏洞</strong>
+                <span class="pr-author">@alijiujiu123</span>
+            </div>
+            <div>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.5/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Contains unresolved merge conflict markers in AGENTS.md making it unmergeable</li>
+            
+            <li>CVE-2025-12345 appears to be a fictional/future CVE number that doesn't exist</li>
+            
+            <li>Dockerfile changes break reproducible builds by installing from npm instead of source</li>
+            
+            <li>Massive scope creep - claims to fix a CVE but changes Docker configs, environment files, and documentation</li>
+            
+            <li>Author name and description are in Chinese while project uses English</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This PR contains merge conflicts, references a non-existent CVE, breaks Docker builds, and shows signs of being an untested AI-generated submission that doesn't actually address any real security vulnerability.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/9728" target="_blank">#9728</a>
+                <strong>fix(gateway): browser.snapshot ignores profile parameter (#9723)</strong>
+                <span class="pr-author">@divol89</span>
+            </div>
+            <div>
+                <span class="badge badge-review">REVIEW</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.7/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Contains multiple unrelated changes bundled together, violating 'Keep PRs focused (one thing per PR)' guideline</li>
+            
+            <li>Includes cron scheduling modifications, Signal message handling, UI performance limits, and model config defaults that aren't mentioned in the PR description</li>
+            
+            <li>Appears to be an automated bot PR but doesn't follow the AI-assisted PR guidelines requiring transparency about AI involvement</li>
+            
+            <li>Changes span 11 files with +94/-15 lines but only describes browser profile fix</li>
+            
+            <li>Introduces potential bugs like 'undefined'/'NaN' messageId issues in Signal handling</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">While the core browser profile fix aligns with project needs, the PR violates the 'one thing per PR' principle and bundles unrelated changes without proper documentation or AI transparency.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/12411" target="_blank">#12411</a>
+                <strong>Test Improvements: Add Retry Logging and Max Attempts Handling</strong>
+                <span class="pr-author">@dikshithreddym</span>
+            </div>
+            <div>
+                <span class="badge badge-review">REVIEW</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.7/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Tests assert behavior that doesn't match current deliverWebReply API implementation</li>
+            
+            <li>Introduces maxRetries parameter that isn't part of the actual function signature</li>
+            
+            <li>Tests expect replyLogger.warn calls that don't exist in current retry logic</li>
+            
+            <li>May cause test failures or type errors due to API mismatches</li>
+            
+            <li>The tests assert behavior that does not match the current implementation of `deliverWebReply`, leading to potential test failures.</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">While the PR aligns with stability and testing goals, it contains implementation mismatches that need correction before merge.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/12999" target="_blank">#12999</a>
+                <strong>feat(agents): Add streaming response metrics tracking</strong>
+                <span class="pr-author">@trevorgordon981</span>
+            </div>
+            <div>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.7/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>The PR description claims only 2 files changed but the diff shows 72 files with +9438/-154 changes, indicating a massive scope creep</li>
+            
+            <li>Includes extensive trading skills (news-sentiment.mjs, options-flow.mjs, portfolio-risk.mjs) which are not mentioned in the project vision or roadmap</li>
+            
+            <li>Adds complex infrastructure modules (model routing, parallel spawn, perf tracing) without prior discussion as required for new features/architecture</li>
+            
+            <li>The FEATURE_IMPLEMENTATION_COMPLETE.md suggests this is completing a 6-feature implementation that was never discussed or approved</li>
+            
+            <li>Introduces significant new subsystems (cost alerts, session recovery, model switching) that would require architectural discussion per contributing guidelines</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This PR has massive undisclosed scope that introduces major architectural changes without following the required discussion process for new features.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/15767" target="_blank">#15767</a>
+                <strong>Fix: Gemini REQUIRED_FIELD_MISSING on corrupted toolResults</strong>
+                <span class="pr-author">@janhcla</span>
+            </div>
+            <div>
+                <span class="badge badge-review">REVIEW</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.0/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Imports from external dependency '@mariozechner/pi-ai/dist/...' instead of repo-local code</li>
+            
+            <li>Test will likely fail in CI due to unresolvable module import in clean checkout</li>
+            
+            <li>Adds a test that documents broken behavior without fixing the underlying issue</li>
+            
+            <li>Creates technical debt by depending on internal dist/ layout of external package</li>
+            
+            <li>The test imports conversion logic from an external dependency's internal 'dist/' layout, which is not aligned with the project's architecture of using repo-local code.</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">While this addresses a legitimate stability issue aligned with project priorities, the implementation has significant technical problems that need resolution before merging.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/15542" target="_blank">#15542</a>
+                <strong>session control and cut down token cost</strong>
+                <span class="pr-author">@shuaige121</span>
+            </div>
+            <div>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.7/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Commits massive amounts of personal session data (720k+ lines) which violates privacy principles of a personal AI assistant</li>
+            
+            <li>Includes personal project workspaces (UFriend, safarimetal-scraper, duduxiang-boss) that don't belong in the main repository</li>
+            
+            <li>Exposes OAuth tokens and credentials despite auth-profiles being mentioned as excluded</li>
+            
+            <li>Adds 1400+ lines of session conversation history containing private user interactions</li>
+            
+            <li>Completely rewrites .gitignore removing important build artifacts and safety exclusions</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This PR fundamentally violates the privacy principles of a personal AI assistant by committing massive amounts of private session data, credentials, and personal project files to a public repository.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/15914" target="_blank">#15914</a>
+                <strong>feat: add messages.suppressMediaPlaceholders config option</strong>
+                <span class="pr-author">@Shuai-DaiDai</span>
+            </div>
+            <div>
+                <span class="badge badge-discuss">DISCUSS</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.7/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Bundles multiple unrelated fixes into a single PR violating 'one thing per PR' guideline</li>
+            
+            <li>Introduces critical logic bug in daemon/inspect.ts that disables gateway conflict detection entirely</li>
+            
+            <li>Contains type error in venice-models.ts adding params property that doesn't exist on ModelDefinitionConfig</li>
+            
+            <li>Mixes feature addition with bug fixes and infrastructure changes without clear rationale</li>
+            
+            <li>Changes span across 9 files with unrelated functionality (Discord, Venice, cron, daemon)</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">While the core feature aligns with project needs, the PR violates contribution guidelines by bundling unrelated changes and introduces critical bugs that could break core functionality.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/16130" target="_blank">#16130</a>
+                <strong>fix: optimize cron job configuration and scheduling</strong>
+                <span class="pr-author">@ShunsukeHayashi</span>
+            </div>
+            <div>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">3.0/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Massive scope with 18,913 additions across 100 files for what claims to be a cron optimization</li>
+            
+            <li>Introduces extensive Japanese documentation and Discord integration features not mentioned in project vision</li>
+            
+            <li>Adds .claude/ directory with agent configurations that appear unrelated to OpenClaw's core assistant functionality</li>
+            
+            <li>Creates clawdbot-specific features when OpenClaw is focused on being a personal AI assistant</li>
+            
+            <li>No clear connection between the PR description (cron job optimization) and the actual changes (Discord bots, Japanese docs, Claude Code integration)</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This PR appears to be adding an entirely different project's functionality (clawdbot/Claude Code integration) rather than optimizing OpenClaw's cron jobs, representing significant architectural drift from the personal AI assistant vision.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17909" target="_blank">#17909</a>
+                <strong>memory-neo4j: task-aware memory filtering (3 layers)</strong>
+                <span class="pr-author">@tsukhani</span>
+            </div>
+            <div>
+                <span class="badge badge-discuss">DISCUSS</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.7/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Massive scope (+23955/-635 lines across 100 files) conflicts with contributing guideline to 'keep PRs focused (one thing per PR)'</li>
+            
+            <li>Introduces complex 3-layer architecture without prior discussion despite guidelines requiring GitHub Discussion for 'new features / architecture'</li>
+            
+            <li>Changes span multiple unrelated areas (docs chat widget, LanceDB benchmarks, CLI scripts) suggesting this should be multiple separate PRs</li>
+            
+            <li>No evidence of community discussion or maintainer input on this architectural change</li>
+            
+            <li>Size XL label indicates this exceeds recommended PR scope</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">While the memory filtering feature aligns with the project's AI assistant goals, the massive scope and architectural changes require community discussion before implementation as per contributing guidelines.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/7992" target="_blank">#7992</a>
+                <strong>Pull Openclaw</strong>
+                <span class="pr-author">@SoulSparkler</span>
+            </div>
+            <div>
+                <span class="badge badge-discuss">DISCUSS</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.0/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Commits concrete secret values in railway.json which violates security best practices</li>
+            
+            <li>Adds remote pairing approval API without clear architectural justification or security review</li>
+            
+            <li>Introduces trust-all proxies default which could compromise security</li>
+            
+            <li>Remote pairing handler has overly broad URL matching that doesn't respect configured path prefixes</li>
+            
+            <li>Changes fundamental gateway binding behavior without clear documentation of security implications</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">While this PR addresses legitimate deployment needs, it introduces significant security concerns and architectural changes that require thorough review and discussion before merging.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/9017" target="_blank">#9017</a>
+                <strong>feat(ui): Premium polish with enhanced components and animations</strong>
+                <span class="pr-author">@thejustinfagan</span>
+            </div>
+            <div>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.3/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Introduces a complete neumorphic design system overhaul without prior discussion as required for architecture changes</li>
+            
+            <li>Adds 2918 lines of purely cosmetic changes that don't address any documented project priorities (stability, UX onboarding, skills, performance)</li>
+            
+            <li>Conflicts with project focus on being a 'personal AI assistant' by prioritizing visual polish over core functionality</li>
+            
+            <li>No evidence this addresses user needs or improves the assistant's core value proposition</li>
+            
+            <li>Massive scope creep - introduces entirely new design language without architectural discussion</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This PR introduces a massive visual overhaul without prior architectural discussion, conflicts with stated project priorities of stability and core functionality, and doesn't align with OpenClaw's focus on being a practical AI assistant.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/13430" target="_blank">#13430</a>
+                <strong>fix(discord): properly handle bot-sent @everyone mentions</strong>
+                <span class="pr-author">@wassimbensalem</span>
+            </div>
+            <div>
+                <span class="badge badge-discuss">DISCUSS</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.3/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>The change appears to break standard @everyone mention detection by requiring additional user mentions</li>
+            
+            <li>No clear documentation of the specific bot-sent @everyone issue being solved</li>
+            
+            <li>The logic change seems counterintuitive - @everyone should be considered a mention regardless of other users mentioned</li>
+            
+            <li>Greptile analysis indicates this is 'not safe to merge as-is' and 'breaks @everyone mention detection in common cases'</li>
+            
+            <li>The change introduces a potential bug by altering the behavior of `@everyone` mentions, which could lead to incorrect message handling.</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">While the PR addresses Discord stability (a stated priority), the implementation appears to introduce a logical flaw that could break standard mention detection functionality.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/14871" target="_blank">#14871</a>
+                <strong>Claude/audit codebase architecture 8a ql2</strong>
+                <span class="pr-author">@MagnoliaLex</span>
+            </div>
+            <div>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.0/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Uses incorrect project name 'Moltbot' throughout instead of 'OpenClaw'</li>
+            
+            <li>Contains hard-coded internal file paths and API references that don't match actual codebase</li>
+            
+            <li>References non-existent dependencies like '@mariozechner/pi-agent-core' and '@agentclientprotocol/sdk'</li>
+            
+            <li>Claims incorrect statistics (2,500 TypeScript files, 412,000 LOC) that appear fabricated</li>
+            
+            <li>Documents architecture that doesn't match the actual OpenClaw structure</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This PR documents an entirely different project called 'Moltbot' with fabricated statistics and incorrect technical details, creating misleading documentation that conflicts with OpenClaw's actual architecture.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/4404" target="_blank">#4404</a>
+                <strong>chrome-extension: enable On all sites (host_permissions <all_urls>)</strong>
+                <span class="pr-author">@CodeTrainerMan</span>
+            </div>
+            <div>
+                <span class="badge badge-discuss">DISCUSS</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.3/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Significantly expands security permissions from localhost-only to all websites without architectural discussion</li>
+            
+            <li>Mixed unrelated changes (Swift import reordering, Windows test skip) suggest lack of focused PR scope</li>
+            
+            <li>No discussion of security implications for a personal AI assistant that now has broad web access</li>
+            
+            <li>Contradicts the project's emphasis on being 'personal' and 'local' by requesting universal web permissions</li>
+            
+            <li>No mention in CONTRIBUTING.md process for security-sensitive changes requiring broader review</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">While the technical fix may be valid, requesting universal web permissions for a personal AI assistant requires architectural discussion about security trade-offs and alignment with the 'personal, local' vision.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/6910" target="_blank">#6910</a>
+                <strong>Holochain Integration Example Configurations</strong>
+                <span class="pr-author">@f13end</span>
+            </div>
+            <div>
+                <span class="badge badge-discuss">DISCUSS</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.0/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Introduces major architectural change (Holochain integration) without prior discussion or roadmap mention</li>
+            
+            <li>Adds blockchain/cryptocurrency features (Solana/USDC wallet) that conflict with project's focus as a personal AI assistant</li>
+            
+            <li>Creates enterprise-focused configurations that don't align with 'personal, single-user assistant' vision</li>
+            
+            <li>Implements P2P networking features that contradict the local, fast assistant design goals</li>
+            
+            <li>Adds complex distributed systems concepts that increase complexity beyond project's scope</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This PR introduces a major architectural shift toward blockchain/P2P that fundamentally conflicts with OpenClaw's vision as a fast, local, personal AI assistant.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/17307" target="_blank">#17307</a>
+                <strong>session: abort previous run on /new and /reset to skip stale compaction</strong>
+                <span class="pr-author">@globalcaos</span>
+            </div>
+            <div>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.3/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Claims '1 file changed, 13 insertions' but shows +13458/-777 across 100 files - massive scope mismatch</li>
+            
+            <li>Includes extensive fork-specific documentation (MERGE_PLAYBOOK.md, FORK.md) that conflicts with upstream project goals</li>
+            
+            <li>Adds fork synchronization tooling and workflows that suggest maintaining a permanent fork rather than contributing upstream</li>
+            
+            <li>Contains WhatsApp-specific modifications (triggerPrefix, syncFullHistory) that appear to be custom features not aligned with core project</li>
+            
+            <li>Includes unrelated changes to Chrome extension, budget panel, and other components that don't match the stated session abort fix</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This appears to be a fork merge masquerading as a focused bug fix, introducing fork-specific tooling and extensive modifications that conflict with the project's upstream contribution model.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/14788" target="_blank">#14788</a>
+                <strong>feat: Add DuckDuckGo search provider with Tor support</strong>
+                <span class="pr-author">@emadomedher</span>
+            </div>
+            <div>
+                <span class="badge badge-discuss">DISCUSS</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.7/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Introduces external CLI dependency (ddgs) that must be installed separately, conflicting with OpenClaw's self-contained philosophy</li>
+            
+            <li>Adds Tor proxy support which introduces security/privacy complexity not mentioned in project vision</li>
+            
+            <li>Massive file count (+15362/-13 across 24 files) suggests scope creep beyond just adding a search provider</li>
+            
+            <li>Files changed include unrelated extensions (mcp-client, mumble) indicating this PR combines multiple unrelated features</li>
+            
+            <li>No discussion or RFC mentioned despite CONTRIBUTING.md requiring discussion for new features/architecture</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">While the core search provider addition aligns with existing tools, the external dependencies, security implications, and apparent combination of multiple unrelated features requires architectural discussion before merge.</div>
+        
+    </div>
+    
+    <div class="alignment-card flagged">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/15334" target="_blank">#15334</a>
+                <strong>feat: add multi-tenant REST API for BYOK multi-user support</strong>
+                <span class="pr-author">@0xpaperhead</span>
+            </div>
+            <div>
+                <span class="badge badge-close">CLOSE</span>
+                <span style="font-size: 0.9rem; margin-left: 0.5rem;">4.3/10</span>
+            </div>
+        </div>
+        
+        <ul class="drift-list">
+            
+            <li>Fundamentally conflicts with core vision of 'personal AI assistant you run on your own devices' by adding multi-tenancy</li>
+            
+            <li>README explicitly states 'single-user assistant that feels local, fast, and always-on' which this directly contradicts</li>
+            
+            <li>Introduces complex multi-tenant architecture to a project designed for personal use</li>
+            
+            <li>Adds significant complexity (+1476 lines) for functionality that goes against the stated product vision</li>
+            
+            <li>No discussion or RFC mentioned despite this being a major architectural change</li>
+            
+        </ul>
+        
+        
+        <div class="consensus-detail">This PR fundamentally conflicts with OpenClaw's core vision as a personal, single-user AI assistant by introducing multi-tenant SaaS functionality.</div>
         
     </div>
     
@@ -23948,10 +24762,10 @@
                 <span class="pr-author">@ciberponk</span>
             </div>
             <div>
-                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">9.6/10</span>
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">9.3/10</span>
             </div>
         </div>
-        <div class="consensus-detail">High-quality PR with excellent test coverage, focused scope, and minimal breaking risk.</div>
+        <div class="consensus-detail">Clean, focused fix that adds missing Czech keyword to preference detection regex with appropriate test coverage and zero breaking risk.</div>
     </div>
     
     <div class="alignment-card">
@@ -24007,20 +24821,6 @@
                 <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">9.5/10</span>
             </div>
         </div>
-        <div class="consensus-detail">High-quality PR with focused scope, good test coverage, and minimal breaking risk.</div>
-    </div>
-    
-    <div class="alignment-card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/3967" target="_blank">#3967</a>
-                <strong>fix(sandbox): correct workspace prompt path</strong>
-                <span class="pr-author">@sweepies</span>
-            </div>
-            <div>
-                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">9.5/10</span>
-            </div>
-        </div>
         <div class="consensus-detail">High-quality PR with a focused change, thorough tests, and minimal risk of breaking existing functionality.</div>
     </div>
     
@@ -24032,10 +24832,10 @@
                 <span class="pr-author">@whoknowsmann</span>
             </div>
             <div>
-                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">9.5/10</span>
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">9.4/10</span>
             </div>
         </div>
-        <div class="consensus-detail">High-quality doc update with clear explanations and minimal code changes, but could benefit from additional tests.</div>
+        <div class="consensus-detail">High-quality PR with clear and concise changes, good test coverage, and minimal risk of breaking existing functionality.</div>
     </div>
     
     <div class="alignment-card">
@@ -24046,10 +24846,10 @@
                 <span class="pr-author">@dinakars777</span>
             </div>
             <div>
-                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">9.5/10</span>
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">9.2/10</span>
             </div>
         </div>
-        <div class="consensus-detail">High-quality, focused refactor with good test coverage and minimal risk.</div>
+        <div class="consensus-detail">Clean, focused refactor that replaces console.warn with standardized logging - well-executed with minimal risk and good alignment to project conventions.</div>
     </div>
     
     <div class="alignment-card">
@@ -24074,16 +24874,30 @@
                 <span class="pr-author">@Yida-Dev</span>
             </div>
             <div>
-                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">9.5/10</span>
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">9.3/10</span>
             </div>
         </div>
-        <div class="consensus-detail">High-quality PR with a focused fix, good test coverage, and minimal risk of breaking existing functionality.</div>
+        <div class="consensus-detail">Excellent focused fix that applies an established concurrency pattern to prevent race conditions, with clear documentation and minimal risk.</div>
+    </div>
+    
+    <div class="alignment-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a class="pr-link" href="https://github.com/openclaw/openclaw/pull/12499" target="_blank">#12499</a>
+                <strong>fix(config): add missing customBindHost to gateway Zod schema </strong>
+                <span class="pr-author">@sfo2001</span>
+            </div>
+            <div>
+                <span style="font-size: 1.1rem; font-weight: 700; color: var(--green);">9.1/10</span>
+            </div>
+        </div>
+        <div class="consensus-detail">Clean, focused fix that adds a missing optional field to the Zod schema with good test coverage and minimal risk.</div>
     </div>
     
 
     <footer>
         Generated by <strong>claw-review</strong> · Multi-model consensus PR triage
-        <br>2026-02-17 03:49 UTC
+        <br>2026-02-23 18:17 UTC
     </footer>
 </body>
 </html>

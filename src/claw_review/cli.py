@@ -101,7 +101,12 @@ def cli():
     is_flag=True,
     help="Re-analyze all PRs, ignoring saved state.",
 )
-def analyze(repo, max_prs, output, skip_alignment, skip_quality, no_cache, json_only, preset, budget, batch_size, incremental, force):
+@click.option(
+    "--pr-numbers",
+    default=None,
+    help="Comma-separated PR numbers to analyze (filters fetched PRs).",
+)
+def analyze(repo, max_prs, output, skip_alignment, skip_quality, no_cache, json_only, preset, budget, batch_size, incremental, force, pr_numbers):
     """Run full PR analysis on a GitHub repository."""
 
     # Banner
@@ -152,7 +157,14 @@ def analyze(repo, max_prs, output, skip_alignment, skip_quality, no_cache, json_
         max_prs=config.max_prs,
         use_cache=not no_cache,
     )
-    console.print(f"[green]✓ Fetched {len(prs)} open PRs\n")
+    console.print(f"[green]✓ Fetched {len(prs)} open PRs")
+
+    # Filter to specific PR numbers if requested
+    if pr_numbers:
+        target_numbers = {int(n.strip()) for n in pr_numbers.split(",") if n.strip()}
+        prs = [p for p in prs if p.number in target_numbers]
+        console.print(f"[blue]Filtered to {len(prs)} PRs (from --pr-numbers)")
+    console.print()
 
     if not prs:
         console.print("[yellow]No open PRs found. Nothing to analyze.")

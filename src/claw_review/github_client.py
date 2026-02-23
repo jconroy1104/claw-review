@@ -2,6 +2,7 @@
 
 import json
 import hashlib
+import time
 from pathlib import Path
 from dataclasses import dataclass, asdict
 
@@ -11,6 +12,30 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 GITHUB_API = "https://api.github.com"
 CACHE_DIR = Path(".claw-review-cache")
 MAX_DIFF_CHARS = 12_000  # Truncate diffs to keep model context manageable
+_RETRY_STATUSES = {403, 429, 500, 502, 503}
+_MAX_RETRIES = 3
+
+
+def _request_with_retry(client: httpx.Client, method: str, url: str, **kwargs) -> httpx.Response:
+    """Make an HTTP request with retry on transient errors."""
+    for attempt in range(_MAX_RETRIES):
+        resp = client.request(method, url, **kwargs)
+        if resp.status_code not in _RETRY_STATUSES:
+            return resp
+        if resp.status_code == 403:
+            # Check for rate limit
+            remaining = resp.headers.get("x-ratelimit-remaining", "1")
+            if remaining == "0":
+                reset = int(resp.headers.get("x-ratelimit-reset", "0"))
+                wait = max(reset - int(time.time()), 60)
+                print(f"\n⏳ Rate limited. Waiting {wait}s for reset...")
+                time.sleep(wait + 5)
+                continue
+        wait = 2 ** attempt * 5  # 5s, 10s, 20s
+        print(f"\n⚠ HTTP {resp.status_code} for {url}. Retrying in {wait}s... (attempt {attempt + 1}/{_MAX_RETRIES})")
+        time.sleep(wait)
+    resp.raise_for_status()
+    return resp  # unreachable but satisfies type checker
 
 
 @dataclass
@@ -105,7 +130,8 @@ def fetch_open_prs(
             page = 1
             while len(all_pr_items) < max_prs:
                 per_page = min(100, max_prs - len(all_pr_items))
-                resp = client.get(
+                resp = _request_with_retry(
+                    client, "GET",
                     f"{GITHUB_API}/repos/{repo}/pulls",
                     params={
                         "state": "open",
@@ -145,14 +171,16 @@ def fetch_open_prs(
                         continue
 
                 # Fetch PR detail (includes body, labels, etc.)
-                detail_resp = client.get(
-                    f"{GITHUB_API}/repos/{repo}/pulls/{pr_number}"
+                detail_resp = _request_with_retry(
+                    client, "GET",
+                    f"{GITHUB_API}/repos/{repo}/pulls/{pr_number}",
                 )
                 detail_resp.raise_for_status()
                 detail = detail_resp.json()
 
                 # Fetch files changed
-                files_resp = client.get(
+                files_resp = _request_with_retry(
+                    client, "GET",
                     f"{GITHUB_API}/repos/{repo}/pulls/{pr_number}/files",
                     params={"per_page": 100},
                 )
